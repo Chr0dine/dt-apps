@@ -1,0 +1,182 @@
+{
+  "$schema": "./.dt-app/app.config.schema.json",
+  "environmentUrl": "https://chg74771.sprint.apps.dynatracelabs.com",
+  "app": {
+    "name": "Architect Assistant",
+    "version": "0.1.1",
+    "description": "Confirm Dynatrace onboarding best practices are in place vs missing.",
+    "id": "my.architect.assistant",
+    "icon": "./assets/icon.png",
+    "scopes": [
+      {
+        "name": "storage:smartscape:read",
+        "comment": "read smartscape nodes (hosts, services, k8s, OneAgent) for best-practice checks; IAM tabs: condition value suggestions"
+      },
+      {
+        "name": "settings:objects:read",
+        "comment": "read the OneAgent update policy before changing it; IAM tabs: management zone names for environment:management-zone values"
+      },
+      {
+        "name": "settings:objects:write",
+        "comment": "remediation: create ingest enrichment rules, update the OneAgent update policy, the ActiveGate update mode, network zone fallback and the network zones switch"
+      },
+      {
+        "name": "fleet-management:oneagents:write",
+        "comment": "remediation: assign host groups via OneAgent remote configuration management"
+      },
+      {
+        "name": "state:user-app-states:read",
+        "comment": "read saved primary tag names"
+      },
+      {
+        "name": "state:user-app-states:write",
+        "comment": "save primary tag names"
+      },
+      {
+        "name": "storage:metrics:read",
+        "comment": "read metric series dimensions (Dimensional data); ActiveGates: ActiveGate and extension self-monitoring metrics; Extensions: extension self-monitoring status per configuration and host (dt.sfm.extension.status); IAM tabs: condition value suggestions"
+      },
+      {
+        "name": "storage:logs:read",
+        "comment": "sampled log coverage (Dimensional data); IAM tabs: condition value suggestions"
+      },
+      {
+        "name": "storage:events:read",
+        "comment": "event coverage (Dimensional data); IAM tabs: condition value suggestions"
+      },
+      {
+        "name": "storage:bizevents:read",
+        "comment": "business event coverage (Dimensional data); IAM tabs: condition value suggestions"
+      },
+      {
+        "name": "storage:buckets:read",
+        "comment": "read Grail buckets backing logs, events and business events (Dimensional data)"
+      },
+      {
+        "name": "storage:entities:read",
+        "comment": "Segments: read classic entities and their management zones; Extensions: names of the hosts and host groups monitoring configurations are scoped to, and process instances for recommendations; IAM tabs: condition value suggestions"
+      },
+      {
+        "name": "storage:system:read",
+        "comment": "Segments: list entity types from dt.system.data_objects; ActiveGates: extension framework messages from dt.system.events; Extensions: fastcheck and assignment results (extension framework events); IAM tabs: condition value suggestions"
+      },
+      {
+        "name": "storage:filter-segments:read",
+        "comment": "Segments: list segments to match them to management zones"
+      },
+      {
+        "name": "storage:filter-segments:write",
+        "comment": "remediation: create and update segments converted from management zones"
+      },
+      {
+        "name": "storage:filter-segments:share",
+        "comment": "remediation: create public segments"
+      },
+      {
+        "name": "storage:files:write",
+        "comment": "remediation: upload the lookup table each converted segment reads"
+      },
+      {
+        "name": "environment-api:credentials:read",
+        "comment": "Frontends: read the ReadConfig API token (credential vault) the user-tags function uses for Config API v1, and check whether it exists; Databases: list user-and-password credentials with the Extension authentication scope for a monitoring configuration; Permissions Test: the iam-access function reads the Account Management OAuth client (architect-assistant-account-api); Problem notifications: the workflows function reads the platform token (architect-assistant-workflows) and the tab checks it"
+      },
+      {
+        "name": "environment-api:credentials:write",
+        "comment": "Frontends action: store the user tagging token in the credential vault; Permissions Test: store the Account Management OAuth client; Problem notifications: store the platform token that creates workflows"
+      },
+      {
+        "name": "environment-api:api-tokens:write",
+        "comment": "Frontends action: create the ReadConfig API token for user tagging automatically"
+      },
+      {
+        "name": "environment-api:entities:write",
+        "comment": "Frontends / Ownership action: add owner tags (dt.owner:<team>) to frontends and synthetic monitors"
+      },
+      {
+        "name": "environment-api:slo:read",
+        "comment": "SLOs: list classic SLOs (metric expression, entity selector, target) and evaluate them for the upgrade comparison"
+      },
+      {
+        "name": "slo:slos:read",
+        "comment": "SLOs: list SLOs to match them to classic SLOs by name, and evaluate upgraded SLOs"
+      },
+      {
+        "name": "slo:slos:write",
+        "comment": "remediation: create and update SLOs upgraded from classic SLOs"
+      },
+      {
+        "name": "automation:workflows:read",
+        "comment": "Problem notifications: list workflows to match them to classic problem notifications by name (creating them goes through the workflows function with a platform token: custom apps cannot request automation:workflows:write)"
+      },
+      {
+        "name": "fleet-management:activegates:read",
+        "comment": "ActiveGates: read the last update jobs of an ActiveGate"
+      },
+      {
+        "name": "fleet-management:activegates:write",
+        "comment": "ActiveGates remediation: start an update job (update now), and the remote configuration job that sets the ActiveGate group or network zone"
+      },
+      {
+        "name": "fleet-management:activegates:download",
+        "comment": "ActiveGates: read the ActiveGate target version (installer version API; no installer is downloaded)"
+      },
+      {
+        "name": "fleet-management:activegate.tokens:read",
+        "comment": "ActiveGates: read ActiveGate token expiration dates"
+      },
+      {
+        "name": "fleet-management:activegate.support-archives:read",
+        "comment": "ActiveGates logs: list support archives and their collection status"
+      },
+      {
+        "name": "fleet-management:activegate.support-archives:write",
+        "comment": "ActiveGates logs: start collecting a support archive"
+      },
+      {
+        "name": "fleet-management:activegate.support-archives:download",
+        "comment": "ActiveGates logs: download a collected support archive ZIP"
+      },
+      {
+        "name": "fleet-management:activegate.support-archives:delete",
+        "comment": "ActiveGates logs: cancel a running collection or delete an archive"
+      },
+      {
+        "name": "extensions:definitions:read",
+        "comment": "Databases: check whether each database extension is active in the environment, and read its monitoring configuration schema; Extensions: list every extension in the environment (installed / not, for recommendations and SNMP); IAM tabs: extension names for extensions:extension-name values"
+      },
+      {
+        "name": "extensions:configurations:read",
+        "comment": "Databases: list a database extension's monitoring configurations and their status, to find one that already targets a database; Extensions: read every monitoring configuration (scope, activation context, enabled) to find broken ones and local vs remote"
+      },
+      {
+        "name": "extensions:configurations:write",
+        "comment": "Databases remediation: create a monitoring configuration for a database extension"
+      },
+      {
+        "name": "app-engine:apps:run",
+        "comment": "IAM tabs: list installed apps and the scopes their manifests request (App Registry), for shared:app-id values"
+      },
+      {
+        "name": "settings:schemas:read",
+        "comment": "IAM tabs: list settings schemas and read a schema definition (schema groups), for settings:schemaId / settings:schemaGroup values"
+      },
+      {
+        "name": "storage:spans:read",
+        "comment": "IAM tabs: record-level field values seen on spans (sampled), for dimensional data suggestions"
+      },
+      {
+        "name": "storage:bucket-definitions:read",
+        "comment": "IAM tabs: list Grail buckets and their tables (dt.system.buckets), for storage:bucket-name / storage:table-name values"
+      },
+      {
+        "name": "iam:users:read",
+        "comment": "Permissions Test: find users by name or email (environment IAM API)"
+      },
+      {
+        "name": "iam:groups:read",
+        "comment": "Permissions Test: find groups by name (environment IAM API)"
+      }
+    ],
+    "functionSandbox": {}
+  }
+}

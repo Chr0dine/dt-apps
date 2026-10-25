@@ -1,0 +1,4121 @@
+{
+  "captured": "2026-10-24",
+  "catalog": {
+    "updated": "2026-10-08",
+    "globalsUpdated": "2026-10-20",
+    "services": [
+      {
+        "id": "ai",
+        "anchor": "ai",
+        "title": "AI exposes generative AI capabilities in Dynatrace",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "ai:operator:execute",
+            "anchor": "ai-operator-execute",
+            "description": "Grants permission to interact with the AI conversational interface",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "api-tokens",
+        "anchor": "api-tokens",
+        "title": "API tokens",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "api-tokens:tokens:read",
+            "anchor": "api-tokens-tokens-read",
+            "description": "Grants permission to read API tokens",
+            "conditions": []
+          },
+          {
+            "id": "api-tokens:tokens:write",
+            "anchor": "api-tokens-tokens-write",
+            "description": "Grants permission to write API tokens",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "app-engine",
+        "anchor": "app-engine",
+        "title": "AppEngine",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "app-engine:apps:install",
+            "anchor": "app-engine-apps-install",
+            "description": "Grants permission to install and update apps",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "app-engine:app-installer",
+                "description": "The ID of the user that installed the app.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "app-engine:apps:run",
+            "anchor": "app-engine-apps-run",
+            "description": "Grants permission to list and run apps and gives basic access to the Launcher",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "app-engine:app-installer",
+                "description": "The ID of the user that installed the app.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "app-engine:apps:delete",
+            "anchor": "app-engine-apps-delete",
+            "description": "Grants permission to uninstall apps",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "app-engine:app-installer",
+                "description": "The ID of the user that installed the app.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "app-engine:functions:run",
+            "anchor": "app-engine-functions-run",
+            "description": "Grants permission to use the function-executor",
+            "conditions": []
+          },
+          {
+            "id": "app-engine:edge-connects:read",
+            "anchor": "app-engine-edge-connects-read",
+            "description": "Grants permission to read EdgeConnects",
+            "conditions": []
+          },
+          {
+            "id": "app-engine:edge-connects:write",
+            "anchor": "app-engine-edge-connects-write",
+            "description": "Grants permission to write EdgeConnects",
+            "conditions": []
+          },
+          {
+            "id": "app-engine:edge-connects:delete",
+            "anchor": "app-engine-edge-connects-delete",
+            "description": "Grants permission to delete EdgeConnects",
+            "conditions": []
+          },
+          {
+            "id": "app-engine:certificates:create",
+            "anchor": "app-engine-certificates-create",
+            "description": "Grants permission to create short-living certificates for app releases",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "app-settings",
+        "anchor": "app-settings",
+        "title": "App Settings service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "app-settings:objects:read",
+            "anchor": "app-settings-objects-read",
+            "description": "Grants permission to read app settings objects belonging to the schema",
+            "conditions": [
+              {
+                "key": "settings:schemaId",
+                "description": "A string that uniquely identifies a single app settings schema. The identifier of a schema can be found in the info box of a settings screen. The condition will match if the object's schemaId property matches.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "shared:app-id",
+                "description": "A string that matches an app identifier. Only applicable to objects of schemas that have been added via apps. The condition will match if the object's app-id property matches.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "app-settings:objects:write",
+            "anchor": "app-settings-objects-write",
+            "description": "Grants permission to write settings objects belonging to the schema",
+            "conditions": [
+              {
+                "key": "settings:schemaId",
+                "description": "A string that uniquely identifies a single settings schema. The identifier of a schema can be found in the info box of a settings screen. The condition will match if the object's schemaId property matches.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "shared:app-id",
+                "description": "A string that matches an app identifier. Only applicable to objects of schemas that have been added via apps. The condition will match if the object's app-id property matches.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "app-settings:objects:admin",
+            "anchor": "app-settings-objects-admin",
+            "description": "Enables using admin-mode to access, change ownership and share permissions of any object. Admin-mode only bypasses the ownership check - so to do anything useful, app-settings:objects:read and/or app-settings:objects:write are needed as well.",
+            "conditions": [
+              {
+                "key": "settings:schemaId",
+                "description": "A string that uniquely identifies a single app settings schema. The identifier of a schema can be found in the info box of a settings screen. The condition will match if the object's schemaId property matches.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "shared:app-id",
+                "description": "A string that matches an app identifier. Only applicable to objects of schemas that have been added via apps. The condition will match if the object's app-id property matches.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "automation",
+        "anchor": "automation",
+        "title": "Automation Server",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "automation:workflows:read",
+            "anchor": "automation-workflows-read",
+            "description": "Grants permission to read workflows",
+            "conditions": []
+          },
+          {
+            "id": "automation:workflows:write",
+            "anchor": "automation-workflows-write",
+            "description": "Grants permission to write workflows",
+            "conditions": [
+              {
+                "key": "automation:workflow-type",
+                "description": "A string that identifies a workflow type either SIMPLE or STANDARD",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "automation:workflows:run",
+            "anchor": "automation-workflows-run",
+            "description": "Grants permission to execute workflows",
+            "conditions": []
+          },
+          {
+            "id": "automation:workflows:admin",
+            "anchor": "automation-workflows-admin",
+            "description": "Grant admin permissions for workflows.",
+            "conditions": []
+          },
+          {
+            "id": "automation:rules:read",
+            "anchor": "automation-rules-read",
+            "description": "Grants permission to read scheduling rules",
+            "conditions": []
+          },
+          {
+            "id": "automation:rules:write",
+            "anchor": "automation-rules-write",
+            "description": "Grants permission to write scheduling rules",
+            "conditions": []
+          },
+          {
+            "id": "automation:calendars:read",
+            "anchor": "automation-calendars-read",
+            "description": "Grants permission to read business calendars",
+            "conditions": []
+          },
+          {
+            "id": "automation:calendars:write",
+            "anchor": "automation-calendars-write",
+            "description": "Grants permission to write business calendars",
+            "conditions": []
+          },
+          {
+            "id": "automation:webhookhandlers:read",
+            "anchor": "automation-webhookhandlers-read",
+            "description": "Grants permission to read webhook handlers",
+            "conditions": []
+          },
+          {
+            "id": "automation:webhookhandlers:write",
+            "anchor": "automation-webhookhandlers-write",
+            "description": "Grants permission to write webhook handlers",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "business-analytics",
+        "anchor": "business-analytics",
+        "title": "Platform Business Analytics Service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "business-analytics:business-flows:write",
+            "anchor": "business-analytics-business-flows-write",
+            "description": "Grants permission to write business-flows",
+            "conditions": []
+          },
+          {
+            "id": "business-analytics:business-flows:read",
+            "anchor": "business-analytics-business-flows-read",
+            "description": "Grants permission to read business-flows",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "credential-vault",
+        "anchor": "credential-vault",
+        "title": "Credential-Vault Service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "credential-vault:entries:read",
+            "anchor": "credential-vault-entries-read",
+            "description": "Grants permission to read entries from the credential vault",
+            "conditions": []
+          },
+          {
+            "id": "credential-vault:entries:write",
+            "anchor": "credential-vault-entries-write",
+            "description": "Grants permission to write entries to the credential vault",
+            "conditions": []
+          },
+          {
+            "id": "credential-vault:entries:admin",
+            "anchor": "credential-vault-entries-admin",
+            "description": "Grants permission to overwrite entries in the credential vault",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "data-acquisition",
+        "anchor": "data-acquisition",
+        "title": "Data Acquisition Ingest",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "data-acquisition:logs:ingest",
+            "anchor": "data-acquisition-logs-ingest",
+            "description": "Grants permission to ingest logs from Data Acquisition supported sources",
+            "conditions": []
+          },
+          {
+            "id": "data-acquisition:metrics:ingest",
+            "anchor": "data-acquisition-metrics-ingest",
+            "description": "Grants permission to ingest metrics from Data Acquisition supported sources",
+            "conditions": []
+          },
+          {
+            "id": "data-acquisition:events:ingest",
+            "anchor": "data-acquisition-events-ingest",
+            "description": "Grants permission to ingest events from Data Acquisition supported sources",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "davis",
+        "anchor": "davis",
+        "title": "Davis service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "davis:analyzers:read",
+            "anchor": "davis-analyzers-read",
+            "description": "Grants permission to view Davis analyzers",
+            "conditions": []
+          },
+          {
+            "id": "davis:analyzers:execute",
+            "anchor": "davis-analyzers-execute",
+            "description": "Grants permission to execute Davis analyzers",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "davis-copilot",
+        "anchor": "davis-copilot",
+        "title": "Davis CoPilot exposes generative AI capabilities in Dynatrace",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "davis-copilot:conversations:execute",
+            "anchor": "davis-copilot-conversations-execute",
+            "description": "Grants permission to interact with the Davis CoPilot conversational interface",
+            "conditions": []
+          },
+          {
+            "id": "davis-copilot:nl2dql:execute",
+            "anchor": "davis-copilot-nl2dql-execute",
+            "description": "Grants permission to execute the Natural Language to DQL generative AI capability",
+            "conditions": []
+          },
+          {
+            "id": "davis-copilot:dql2nl:execute",
+            "anchor": "davis-copilot-dql2nl-execute",
+            "description": "Grants permission to execute the CoPilot skill 'Summarize DQL'",
+            "conditions": []
+          },
+          {
+            "id": "davis-copilot:document-search:execute",
+            "anchor": "davis-copilot-document-search-execute",
+            "description": "Grants permission to execute the CoPilot skill 'Document Search'",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "deobfuscation",
+        "anchor": "deobfuscation",
+        "title": "Deobfuscation Service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "deobfuscation:symbol-files:read",
+            "anchor": "deobfuscation-symbol-files-read",
+            "description": "Grants permission to retrieve information regarding Symbol files.",
+            "conditions": []
+          },
+          {
+            "id": "deobfuscation:symbol-files:write",
+            "anchor": "deobfuscation-symbol-files-write",
+            "description": "Grants permission to upload Symbol files.",
+            "conditions": []
+          },
+          {
+            "id": "deobfuscation:symbol-files:delete",
+            "anchor": "deobfuscation-symbol-files-delete",
+            "description": "Grants permission to delete Symbol files.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "deployment",
+        "anchor": "deployment",
+        "title": "Deployment service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "deployment:activegates.network-zones:write",
+            "anchor": "deployment-activegates-network-zones-write",
+            "description": "Grants permission to write ActiveGate network zones",
+            "conditions": []
+          },
+          {
+            "id": "deployment:activegates.groups:write",
+            "anchor": "deployment-activegates-groups-write",
+            "description": "Grants permission to write ActiveGate groups",
+            "conditions": []
+          },
+          {
+            "id": "deployment:oneagents.network-zones:write",
+            "anchor": "deployment-oneagents-network-zones-write",
+            "description": "Grants permission to write OneAgent network zones",
+            "conditions": []
+          },
+          {
+            "id": "deployment:oneagents.host-groups:write",
+            "anchor": "deployment-oneagents-host-groups-write",
+            "description": "Grants permission to write OneAgent host groups",
+            "conditions": []
+          },
+          {
+            "id": "deployment:oneagents.host-tags:write",
+            "anchor": "deployment-oneagents-host-tags-write",
+            "description": "Grants permission to write OneAgent host tags",
+            "conditions": []
+          },
+          {
+            "id": "deployment:oneagents.host-properties:write",
+            "anchor": "deployment-oneagents-host-properties-write",
+            "description": "Grants permission to write OneAgent host properties",
+            "conditions": []
+          },
+          {
+            "id": "deployment:oneagents.communication-settings:write",
+            "anchor": "deployment-oneagents-communication-settings-write",
+            "description": "Grants permission to write OneAgent communication settings",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "dev-obs",
+        "anchor": "dev-obs",
+        "title": "Developer Observability",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "dev-obs:breakpoint:set",
+            "anchor": "dev-obs-breakpoint-set",
+            "description": "Grants permission to set breakpoint using DevObs live debugger",
+            "conditions": [
+              {
+                "key": "dev-obs:k8s.namespace.name",
+                "description": "Kubernetes namespaces of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:dt.entity.process_group",
+                "description": "Dynatrace entity process group of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:dt.process_group.detected_name",
+                "description": "Dynatrace process group detected name of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:k8s.cluster.name",
+                "description": "Cluster name of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:host.group",
+                "description": "Host group of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:host.name",
+                "description": "Host name of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "dev-obs:breakpoints:set",
+            "anchor": "dev-obs-breakpoints-set",
+            "description": "Grants permission to set breakpoint using DevObs live debugger",
+            "conditions": [
+              {
+                "key": "dev-obs:k8s.namespace.name",
+                "description": "Kubernetes namespaces of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:dt.entity.process_group",
+                "description": "Dynatrace entity process group of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:dt.process_group.detected_name",
+                "description": "Dynatrace process group detected name of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:k8s.cluster.name",
+                "description": "Cluster name of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:host.group",
+                "description": "Host group of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "dev-obs:host.name",
+                "description": "Host name of the agents where the user is allowed to set breakpoints",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "!=",
+                  "NOT IN",
+                  "NOT startsWith"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "dev-obs:breakpoint:manage",
+            "anchor": "dev-obs-breakpoint-manage",
+            "description": "Grants permission to manage breakpoints set in DevObs live debugger",
+            "conditions": []
+          },
+          {
+            "id": "dev-obs:breakpoints:manage",
+            "anchor": "dev-obs-breakpoints-manage",
+            "description": "Grants permission to manage breakpoints set in DevObs live debugger",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "document",
+        "anchor": "document",
+        "title": "Document service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "document:documents:write",
+            "anchor": "document-documents-write",
+            "description": "Grants permission to create and update documents of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:documents:read",
+            "anchor": "document-documents-read",
+            "description": "Grants permission to read documents of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:documents:delete",
+            "anchor": "document-documents-delete",
+            "description": "Grants permission to delete documents of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:documents:admin",
+            "anchor": "document-documents-admin",
+            "description": "Grants admin permissions for documents of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:environment-shares:read",
+            "anchor": "document-environment-shares-read",
+            "description": "Grants permission to read environment shares of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:environment-shares:write",
+            "anchor": "document-environment-shares-write",
+            "description": "Grants permission to create and update environment shares of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:environment-shares:claim",
+            "anchor": "document-environment-shares-claim",
+            "description": "Grants permission to claim environment shares of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:environment-shares:delete",
+            "anchor": "document-environment-shares-delete",
+            "description": "Grants permission to delete environment shares of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:direct-shares:delete",
+            "anchor": "document-direct-shares-delete",
+            "description": "Grants permission to delete direct shares of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:direct-shares:read",
+            "anchor": "document-direct-shares-read",
+            "description": "Grants permission to read direct shares of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:direct-shares:write",
+            "anchor": "document-direct-shares-write",
+            "description": "Grants permission to create and update direct shares of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:trash.documents:read",
+            "anchor": "document-trash-documents-read",
+            "description": "Grants permission to read deleted documents of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:trash.documents:delete",
+            "anchor": "document-trash-documents-delete",
+            "description": "Grants permission to remove deleted documents from the trash of the document service",
+            "conditions": []
+          },
+          {
+            "id": "document:trash.documents:restore",
+            "anchor": "document-trash-documents-restore",
+            "description": "Grants permission to restore deleted documents from the trash of the document service",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "email",
+        "anchor": "email",
+        "title": "API for sending emails",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "email:emails:send",
+            "anchor": "email-emails-send",
+            "description": "Grants permission to send emails from @apps.dynatrace.com with send email API",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "environment",
+        "anchor": "environment",
+        "title": "Environment and management zone user permissions. See Migrate role-based permissions to Dynatrace IAM for more information.",
+        "notes": [
+          "Role IAM permissions work the same way as classic roles do, which means that the environment:roles:viewer permission is a part of any other role permission. For example, a policy granting environment:roles:manage-settings permission also allows a user to access the web UI."
+        ],
+        "permissions": [
+          {
+            "id": "environment:roles:viewer",
+            "anchor": "environment-roles-viewer",
+            "description": "Grants user the Access environment permission.",
+            "conditions": [
+              {
+                "key": "environment:management-zone",
+                "description": "A string that uniquely identifies a management zone. Applies the permission on the management zone level for the specified management zone.",
+                "operators": [
+                  "IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!=",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "environment:roles:manage-settings",
+            "anchor": "environment-roles-manage-settings",
+            "description": "Grants user the Change monitoring settings permission.",
+            "conditions": [
+              {
+                "key": "environment:management-zone",
+                "description": "A string that uniquely identifies a management zone. Applies the permission on management zone level for the specified management zone.",
+                "operators": [
+                  "IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!=",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "environment:roles:agent-install",
+            "anchor": "environment-roles-agent-install",
+            "description": "Grants user the Download/install OneAgent permission. Users who have this permission assigned are also able to view monitoring data for all management zones.",
+            "conditions": []
+          },
+          {
+            "id": "environment:roles:view-sensitive-request-data",
+            "anchor": "environment-roles-view-sensitive-request-data",
+            "description": "Grants user the View sensitive request data permission.",
+            "conditions": [
+              {
+                "key": "environment:management-zone",
+                "description": "A string that uniquely identifies a management zone. Applies the permission on management zone level for the specified management zone.",
+                "operators": [
+                  "IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!=",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "environment:roles:configure-request-capture-data",
+            "anchor": "environment-roles-configure-request-capture-data",
+            "description": "Grants user the Configure capture of sensitive data permission. Users who have this permission assigned are also able to view monitoring data for all management zones.",
+            "conditions": []
+          },
+          {
+            "id": "environment:roles:replay-sessions-without-masking",
+            "anchor": "environment-roles-replay-sessions-without-masking",
+            "description": "Grants user the Replay session data without masking permission.",
+            "conditions": [
+              {
+                "key": "environment:management-zone",
+                "description": "A string that uniquely identifies a management zone. Applies the permission on management zone level for the specified management zone.",
+                "operators": [
+                  "IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!=",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "environment:roles:replay-sessions-with-masking",
+            "anchor": "environment-roles-replay-sessions-with-masking",
+            "description": "Grants user the Replay session data permission.",
+            "conditions": [
+              {
+                "key": "environment:management-zone",
+                "description": "A string that uniquely identifies a management zone. Applies the permission on management zone level for the specified management zone.",
+                "operators": [
+                  "IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!=",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "environment:roles:manage-security-problems",
+            "anchor": "environment-roles-manage-security-problems",
+            "description": "Grants user the Manage security problems permission.",
+            "conditions": [
+              {
+                "key": "environment:management-zone",
+                "description": "A string that uniquely identifies a management zone. Applies the permission on management zone level for the specified management zone.",
+                "operators": [
+                  "IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!=",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "environment:roles:view-security-problems",
+            "anchor": "environment-roles-view-security-problems",
+            "description": "Grants user the View security problems permission.",
+            "conditions": [
+              {
+                "key": "environment:management-zone",
+                "description": "A string that uniquely identifies a management zone. Applies the permission on management zone level for the specified management zone.",
+                "operators": [
+                  "IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!=",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "environment:roles:logviewer",
+            "anchor": "environment-roles-logviewer",
+            "description": "Grants user the View logs permission.",
+            "conditions": [
+              {
+                "key": "environment:management-zone",
+                "description": "A string that uniquely identifies a management zone. Applies the permission on management zone level for the specified management zone.",
+                "operators": [
+                  "IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!=",
+                  "MATCH"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "extensions",
+        "anchor": "extensions",
+        "title": "Extensions service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "extensions:definitions:read",
+            "anchor": "extensions-definitions-read",
+            "description": "Grants permission to read extension and environment configurations",
+            "conditions": [
+              {
+                "key": "extensions:extension-name",
+                "description": "A string that uniquely identifies a single extension",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "!=",
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "extensions:definitions:write",
+            "anchor": "extensions-definitions-write",
+            "description": "Grants permission to write (update/create/delete) extension and environment configurations",
+            "conditions": [
+              {
+                "key": "extensions:extension-name",
+                "description": "A string that uniquely identifies a single extension",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "!=",
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "extensions:configurations:read",
+            "anchor": "extensions-configurations-read",
+            "description": "Grants permission to read extension monitoring configurations",
+            "conditions": [
+              {
+                "key": "extensions:host",
+                "description": "A string that uniquely identifies a single host for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:host-group",
+                "description": "A string that uniquely identifies a single host group for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:ag-group",
+                "description": "A string that uniquely identifies a single ActiveGate group for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:management-zone",
+                "description": "A string that uniquely identifies a single management zone for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:extension-name",
+                "description": "A string that uniquely identifies a single extension",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "!=",
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "extensions:configurations:write",
+            "anchor": "extensions-configurations-write",
+            "description": "Grants permission to write (update/create/delete) extension monitoring configurations",
+            "conditions": [
+              {
+                "key": "extensions:host",
+                "description": "A string that uniquely identifies a single host for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:host-group",
+                "description": "A string that uniquely identifies a single host group for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:ag-group",
+                "description": "A string that uniquely identifies a single ActiveGate group for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:management-zone",
+                "description": "A string that uniquely identifies a single management zone for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:extension-name",
+                "description": "A string that uniquely identifies a single extension",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "!=",
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "extensions:configuration.actions:write",
+            "anchor": "extensions-configuration-actions-write",
+            "description": "Grants permission to execute actions for extension",
+            "conditions": [
+              {
+                "key": "extensions:host",
+                "description": "A string that uniquely identifies a single host for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:host-group",
+                "description": "A string that uniquely identifies a single host group for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:ag-group",
+                "description": "A string that uniquely identifies a single ActiveGate group for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:management-zone",
+                "description": "A string that uniquely identifies a single management zone for monitoring configuration assignment",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "extensions:extension-name",
+                "description": "A string that uniquely identifies a single extension",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "!=",
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "extensions:discovery.jmx:read",
+            "anchor": "extensions-discovery-jmx-read",
+            "description": "Grants permission to discover running Java processes via JMX and read their data through extensions",
+            "conditions": []
+          },
+          {
+            "id": "extensions:discovery.pmi:read",
+            "anchor": "extensions-discovery-pmi-read",
+            "description": "Grants permission to discover running Java processes via PMI and read their data through extensions",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "fleet-management",
+        "anchor": "fleet-management",
+        "title": "Fleet Management API service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "fleet-management:activegate.tokens:read",
+            "anchor": "fleet-management-activegate-tokens-read",
+            "description": "Grants access to read activegate tokens",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegate.tokens:write",
+            "anchor": "fleet-management-activegate-tokens-write",
+            "description": "Grants access to create and delete activegate tokens",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegate.tokens:create",
+            "anchor": "fleet-management-activegate-tokens-create",
+            "description": "Grants access to create (only) activegate tokens",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegates:download",
+            "anchor": "fleet-management-activegates-download",
+            "description": "Grants access to download ActiveGate installers",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegate.connection-info:read",
+            "anchor": "fleet-management-activegate-connection-info-read",
+            "description": "Grants access to get ActiveGate connection details",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegates:read",
+            "anchor": "fleet-management-activegates-read",
+            "description": "Grants access to read ActiveGates",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegates:write",
+            "anchor": "fleet-management-activegates-write",
+            "description": "Grants access to write ActiveGates",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:container-images:read",
+            "anchor": "fleet-management-container-images-read",
+            "description": "Grants access to read URIs for container images",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegate.support-archives:read",
+            "anchor": "fleet-management-activegate-support-archives-read",
+            "description": "Grants access to list ActiveGate support archives",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegate.support-archives:download",
+            "anchor": "fleet-management-activegate-support-archives-download",
+            "description": "Grants access to download ActiveGate support archives",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegate.support-archives:write",
+            "anchor": "fleet-management-activegate-support-archives-write",
+            "description": "Grants access to collect ActiveGate support archives",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:activegate.support-archives:delete",
+            "anchor": "fleet-management-activegate-support-archives-delete",
+            "description": "Grants access to cancel or delete ActiveGate support archives",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagent.support-archives:read",
+            "anchor": "fleet-management-oneagent-support-archives-read",
+            "description": "Grants access to list OneAgent support archives",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagent.support-archives:download",
+            "anchor": "fleet-management-oneagent-support-archives-download",
+            "description": "Grants access to download OneAgent support archives",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagent.support-archives:write",
+            "anchor": "fleet-management-oneagent-support-archives-write",
+            "description": "Grants access to collect OneAgent support archives",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagent.support-archives:delete",
+            "anchor": "fleet-management-oneagent-support-archives-delete",
+            "description": "Grants access to cancel or delete OneAgent support archives",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:network-zones:read",
+            "anchor": "fleet-management-network-zones-read",
+            "description": "Grants access to read network zones",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:network-zones:write",
+            "anchor": "fleet-management-network-zones-write",
+            "description": "Grants access to write network zones",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:public-addresses:read",
+            "anchor": "fleet-management-public-addresses-read",
+            "description": "Grants access to list public IP addresses",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagents:download",
+            "anchor": "fleet-management-oneagents-download",
+            "description": "Grants access to download OneAgent installers",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagent.connection-info:read",
+            "anchor": "fleet-management-oneagent-connection-info-read",
+            "description": "Grants access to read OneAgent connection details",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagents:read",
+            "anchor": "fleet-management-oneagents-read",
+            "description": "Grants access to read OneAgent information",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagents:write",
+            "anchor": "fleet-management-oneagents-write",
+            "description": "Grants access to manage OneAgent configuration",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:oneagent.tokens:read",
+            "anchor": "fleet-management-oneagent-tokens-read",
+            "description": "Grants access to read OneAgent tokens",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:tenant-token:rotate",
+            "anchor": "fleet-management-tenant-token-rotate",
+            "description": "Grants access to rotate tenant tokens",
+            "conditions": []
+          },
+          {
+            "id": "fleet-management:cluster-id:read",
+            "anchor": "fleet-management-cluster-id-read",
+            "description": "Grants access to read cluster id",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "geolocation",
+        "anchor": "geolocation",
+        "title": "Geolocation Service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "geolocation:locations:lookup",
+            "anchor": "geolocation-locations-lookup",
+            "description": "Grants permission to lookup geolocations for IP adresses.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "hub",
+        "anchor": "hub",
+        "title": "Hub provides catalog content, such as Dynatrace Apps, Extensions, and Technologies, in the context of the environment.",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "hub:catalog:read",
+            "anchor": "hub-catalog-read",
+            "description": "Grants permission to read the hub catalog content.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "hyperscaler-authentication",
+        "anchor": "hyperscaler-authentication",
+        "title": "Hyperscaler authentication service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "hyperscaler-authentication:aws:authenticate",
+            "anchor": "hyperscaler-authentication-aws-authenticate",
+            "description": "Grants permission to authenticate against AWS.",
+            "conditions": []
+          },
+          {
+            "id": "hyperscaler-authentication:azure:authenticate",
+            "anchor": "hyperscaler-authentication-azure-authenticate",
+            "description": "Grants permission to authenticate against Azure.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "iam",
+        "anchor": "iam",
+        "title": "Identity and Access Management Framework.",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "iam:service-users:use",
+            "anchor": "iam-service-users-use",
+            "description": "Grants permission to use all or specified service users",
+            "conditions": [
+              {
+                "key": "iam:service-user-email",
+                "description": "Service users emails",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "iam:service-user-owner",
+                "description": "UUID of the owner of the service user. '${global:userId}' value allows using the service user owned by the caller.",
+                "operators": [
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "iam:service-users:create",
+            "anchor": "iam-service-users-create",
+            "description": "Grants permission to create a service user in the environment",
+            "conditions": []
+          },
+          {
+            "id": "iam:bindings:read",
+            "anchor": "iam-bindings-read",
+            "description": "Grants permission to read bindings",
+            "conditions": [
+              {
+                "key": "iam:policyUuid",
+                "description": "Policy uuid in the URI.",
+                "operators": [
+                  "=",
+                  "IN"
+                ]
+              },
+              {
+                "key": "iam:levelType",
+                "description": "Level type in the URI.",
+                "operators": [
+                  "=",
+                  "IN"
+                ]
+              },
+              {
+                "key": "iam:boundGroup",
+                "description": "Group uuid in the URI.",
+                "operators": [
+                  "=",
+                  "IN"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "iam:bindings:write",
+            "anchor": "iam-bindings-write",
+            "description": "Grants permission to create bindings",
+            "conditions": [
+              {
+                "key": "iam:policyUuid",
+                "description": "Policy uuid in the URI.",
+                "operators": [
+                  "=",
+                  "IN"
+                ]
+              },
+              {
+                "key": "iam:levelType",
+                "description": "Level type in the URI.",
+                "operators": [
+                  "=",
+                  "IN"
+                ]
+              },
+              {
+                "key": "iam:boundGroup",
+                "description": "Group uuid in the URI.",
+                "operators": [
+                  "=",
+                  "IN"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "iam:policies:read",
+            "anchor": "iam-policies-read",
+            "description": "Grants permission to read policies",
+            "conditions": []
+          },
+          {
+            "id": "iam:policies:write",
+            "anchor": "iam-policies-write",
+            "description": "Grants permission to create policies",
+            "conditions": []
+          },
+          {
+            "id": "iam:boundaries:read",
+            "anchor": "iam-boundaries-read",
+            "description": "Grants permission to read boundaries",
+            "conditions": []
+          },
+          {
+            "id": "iam:boundaries:write",
+            "anchor": "iam-boundaries-write",
+            "description": "Grants permission to create boundaries",
+            "conditions": []
+          },
+          {
+            "id": "iam:effective-permissions:read",
+            "anchor": "iam-effective-permissions-read",
+            "description": "Grants permission to read effective permissions",
+            "conditions": [
+              {
+                "key": "iam-param:entity-type",
+                "description": "Entity type in the query parameters. Allowed values: group, user.",
+                "operators": [
+                  "="
+                ]
+              },
+              {
+                "key": "iam-param:entity-id",
+                "description": "Entity id of given entity-type in the query parameters.",
+                "operators": [
+                  "=",
+                  "IN"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "iam:limits:read",
+            "anchor": "iam-limits-read",
+            "description": "Grants permission to read limits",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "insights",
+        "anchor": "insights",
+        "title": "Business Insights Service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "insights:opportunities:read",
+            "anchor": "insights-opportunities-read",
+            "description": "Grants permission to read data from the Opportunity Insights API",
+            "conditions": []
+          },
+          {
+            "id": "insights:moments:read",
+            "anchor": "insights-moments-read",
+            "description": "Grants permission to query value moments and related data",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "mcp-gateway",
+        "anchor": "mcp-gateway",
+        "title": "MCP Gateway exposes MCP server capabilities in Dynatrace",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "mcp-gateway:servers:invoke",
+            "anchor": "mcp-gateway-servers-invoke",
+            "description": "Grants permission to invoke the MCP Gateway API",
+            "conditions": []
+          },
+          {
+            "id": "mcp-gateway:servers:read",
+            "anchor": "mcp-gateway-servers-read",
+            "description": "Grants permission to list the available MCP servers",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "notification",
+        "anchor": "notification",
+        "title": "API for sending notifications",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "notification:self-notifications:read",
+            "anchor": "notification-self-notifications-read",
+            "description": "Grants permission to read self notifications.",
+            "conditions": []
+          },
+          {
+            "id": "notification:self-notifications:write",
+            "anchor": "notification-self-notifications-write",
+            "description": "Grants permission to write self notifications.",
+            "conditions": []
+          },
+          {
+            "id": "notification:notifications:read",
+            "anchor": "notification-notifications-read",
+            "description": "Grants permission to read notification configurations.",
+            "conditions": []
+          },
+          {
+            "id": "notification:notifications:write",
+            "anchor": "notification-notifications-write",
+            "description": "Grants permission to write notification configurations.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "oauth2",
+        "anchor": "oauth2",
+        "title": "Authorization of OAuth token issuing actions (token exchange)",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "oauth2:clients:manage",
+            "anchor": "oauth2-clients-manage",
+            "description": "Allows management of light OAuth clients",
+            "conditions": [
+              {
+                "key": "oauth2:scopes",
+                "description": "Requested scopes for the generated OAuth clients",
+                "operators": [
+                  "=",
+                  "NOT IN"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "openpipeline",
+        "anchor": "openpipeline",
+        "title": "OpenPipeline",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "openpipeline:configurations:read",
+            "anchor": "openpipeline-configurations-read",
+            "description": "Grants permission to read the OpenPipeline configuration",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:configurations:write",
+            "anchor": "openpipeline-configurations-write",
+            "description": "Grants permission to write the OpenPipeline configuration",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:events:ingest",
+            "anchor": "openpipeline-events-ingest",
+            "description": "Grants permission to ingest events into OpenPipeline",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:events.custom:ingest",
+            "anchor": "openpipeline-events-custom-ingest",
+            "description": "Grants permission to ingest events into custom endpoints of OpenPipeline",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:security.events:ingest",
+            "anchor": "openpipeline-security-events-ingest",
+            "description": "Grants permission to ingest security events into OpenPipeline",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:security.events.custom:ingest",
+            "anchor": "openpipeline-security-events-custom-ingest",
+            "description": "Grants permission to ingest security events into custom endpoints of OpenPipeline",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:events.sdlc:ingest",
+            "anchor": "openpipeline-events-sdlc-ingest",
+            "description": "Grants permission to ingest software development lifecycle events into OpenPipeline",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:events.sdlc.custom:ingest",
+            "anchor": "openpipeline-events-sdlc-custom-ingest",
+            "description": "Grants permission to ingest software development lifecycle events into custom endpoints of OpenPipeline",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:events.smartscape:ingest",
+            "anchor": "openpipeline-events-smartscape-ingest",
+            "description": "Grants permission to ingest smartscape events into OpenPipeline",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:traces:ingest",
+            "anchor": "openpipeline-traces-ingest",
+            "description": "Grants permission to ingest traces (all sources, including OpenTelemetry)",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:logs:ingest",
+            "anchor": "openpipeline-logs-ingest",
+            "description": "Grants permission to ingest logs (all sources, including OpenTelemetry)",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:data-forwarding:validate",
+            "anchor": "openpipeline-data-forwarding-validate",
+            "description": "Grants permission to validate data forwarding configuration",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:bizevents:ingest",
+            "anchor": "openpipeline-bizevents-ingest",
+            "description": "Grants permission to ingest business events into OpenPipeline",
+            "conditions": []
+          },
+          {
+            "id": "openpipeline:events.davis:ingest",
+            "anchor": "openpipeline-events-davis-ingest",
+            "description": "Grants permission to ingest davis events into OpenPipeline",
+            "conditions": [
+              {
+                "key": "openpipeline:event-type",
+                "description": "This condition reduces the permission to ingest only Davis events of a specific event type.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "openpipeline:event-provider",
+                "description": "This condition reduces the permission to ingest only Davis events from a specific provider.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "openpipeline:metrics:ingest",
+            "anchor": "openpipeline-metrics-ingest",
+            "description": "Grants permission to ingest metrics (all sources, including OpenTelemetry)",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "platform-management",
+        "anchor": "platform-management",
+        "title": "Platform Management",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "platform-management:environments:read",
+            "anchor": "platform-management-environments-read",
+            "description": "Grants permission to read operations of the environment data of the public environment PMS API",
+            "conditions": []
+          },
+          {
+            "id": "platform-management:effective-permissions:resolve",
+            "anchor": "platform-management-effective-permissions-resolve",
+            "description": "Grants permission to read operations of the public effective-permissions PMS API endpoint",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "platform-token",
+        "anchor": "platform-token",
+        "title": "Permissions for platform-tokens",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "platform-token:tokens:write",
+            "anchor": "platform-token-tokens-write",
+            "description": "Grants create, update, and delete access to the caller's own platform tokens.",
+            "conditions": []
+          },
+          {
+            "id": "platform-token:tokens:manage",
+            "anchor": "platform-token-tokens-manage",
+            "description": "Grants admin-level access to list, update, and delete any platform token within an account regardless of owner.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "public-access",
+        "anchor": "public-access",
+        "title": "Public access service scope",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "public-access:shares:admin",
+            "anchor": "public-access-shares-admin",
+            "description": "Grant permissions as admin for managing shares.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "rum",
+        "anchor": "rum",
+        "title": "RUM service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "rum:cookie-names:read",
+            "anchor": "rum-cookie-names-read",
+            "description": "Grants permission to query RUM cookie names.",
+            "conditions": []
+          },
+          {
+            "id": "rum:frontends:write",
+            "anchor": "rum-frontends-write",
+            "description": "Grants permission to write RUM frontends.",
+            "conditions": []
+          },
+          {
+            "id": "rum:frontends:delete",
+            "anchor": "rum-frontends-delete",
+            "description": "Grants permission to delete RUM frontends.",
+            "conditions": []
+          },
+          {
+            "id": "rum:manual-insertion-tags:read",
+            "anchor": "rum-manual-insertion-tags-read",
+            "description": "Grants permission to query RUM manual insertion tags.",
+            "conditions": []
+          },
+          {
+            "id": "rum:mobile-config-snippets:read",
+            "anchor": "rum-mobile-config-snippets-read",
+            "description": "Grants permission to query RUM mobile config snippets.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "security-intelligence",
+        "anchor": "security-intelligence",
+        "title": "Provides APIs for security intelligence (enrichment and contextualization)",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "security-intelligence:enrichments:run",
+            "anchor": "security-intelligence-enrichments-run",
+            "description": "Allows execution of enrichments and discovery of integration apps.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "session-replay",
+        "anchor": "session-replay",
+        "title": "Session Replay",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "session-replay:resources:read",
+            "anchor": "session-replay-resources-read",
+            "description": "Grants permission to retrieve a session replay resource",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "anchor": "settings",
+        "title": "Settings service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "settings:objects:read",
+            "anchor": "settings-objects-read",
+            "description": "Enables reading of settings objects belonging to the schema",
+            "conditions": [
+              {
+                "key": "settings:schemaId",
+                "description": "A string that uniquely identifies a single settings schema. The identifier of a schema can either be found via the dedicated schema endpoint in the Dynatrace Environment API or in the info box of a settings screen. The condition will match if the object's schemaId property matches.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "shared:app-id",
+                "description": "A string that matches an app identifier. Only applicable to objects of schemas that have been added via apps. The condition will match if the object's app-id property matches.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              },
+              {
+                "key": "settings:schemaGroup",
+                "description": "A schema group that allows to address multiple individual schemas at once. The group of a schema can either be found via the dedicated schema endpoint in the Dynatrace Environment API or in the info box of a settings screen. The condition will match if the schema of the object has a schemaGroup property that matches.",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "settings:entity.hostGroup",
+                "description": "The host group attribute of an entity for which a setting is stored. This is e.g. useful to grant access to settings scopes of all hosts which belong to the same host group.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!="
+                ]
+              },
+              {
+                "key": "settings:scope",
+                "description": "The exact scope identifier a setting object has or will have. This condition allows to grant access to the scope of e.g., an individual host. In this case the scope equals the entity identifier, e.g. HOST-48B8F52F33098830.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "environment:management-zone",
+                "description": "The name of a management zone. This condition is applicable to either: any settings object that is allowed on the scope of an entity that can be matched into a management zone or settings objects of the schemas builtin:alerting.maintenance-window, builtin:alerting.profile, builtin:anomaly-detection.metric-events, builtin:monitoring.slo and builtin:problem.notifications.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "settings:dt.security_context",
+                "description": "The name of a security context. This condition is applicable to any settings object that is allowed on the scope of an entity that can have a security context assigned.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "startsWith"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "settings:objects:write",
+            "anchor": "settings-objects-write",
+            "description": "Enables writing of settings objects belonging to the schema",
+            "conditions": [
+              {
+                "key": "settings:schemaId",
+                "description": "A string that uniquely identifies a single settings schema. The identifier of a schema can either be found via the dedicated schema endpoint in the Dynatrace Environment API or in the info box of a settings screen. The condition will match if the object's schemaId property matches.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "shared:app-id",
+                "description": "A string that matches an app identifier. Only applicable to objects of schemas that have been added via apps. The condition will match if the object's app-id property matches.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              },
+              {
+                "key": "settings:schemaGroup",
+                "description": "A schema group that allows to address multiple individual schemas at once. The group of a schema can either be found via the dedicated schema endpoint in the Dynatrace Environment API or in the info box of a settings screen. The condition will match if the schema of the object has a schemaGroup property that matches.",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              },
+              {
+                "key": "settings:entity.hostGroup",
+                "description": "The host group attribute of an entity for which a setting is stored. This is e.g. useful to grant access to settings scopes of all hosts which belong to the same host group.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!="
+                ]
+              },
+              {
+                "key": "settings:scope",
+                "description": "The exact scope identifier a setting object has or will have. This condition allows to grant access to the scope of e.g., an individual host. In this case the scope equals the entity identifier, e.g. HOST-48B8F52F33098830.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "environment:management-zone",
+                "description": "The name of a management zone. This condition is applicable to either: any settings object that is allowed on the scope of an entity that can be matched into a management zone or settings objects of the schemas builtin:alerting.maintenance-window, builtin:alerting.profile, builtin:anomaly-detection.metric-events, builtin:monitoring.slo and builtin:problem.notifications.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "settings:dt.security_context",
+                "description": "The name of a security context. This condition is applicable to any settings object that is allowed on the scope of an entity that can have a security context assigned.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "startsWith"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "settings:schemas:read",
+            "anchor": "settings-schemas-read",
+            "description": "Enables reading settings schemas",
+            "conditions": [
+              {
+                "key": "settings:schemaId",
+                "description": "A string that uniquely identifies a single settings schema. The identifier of a schema can either be found via the dedicated schema endpoint in the Dynatrace Environment API or in the info box of a settings screen. The condition will match if the schema's schemaId property of the schema matches.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "shared:app-id",
+                "description": "A string that matches an app identifier. Only applicable to objects of schemas that have been added via apps. The condition will match if the object's app-id property matches.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              },
+              {
+                "key": "settings:schemaGroup",
+                "description": "A schema group that allows to address multiple individual schemas at once. The group of a schema can either be found via the dedicated schema endpoint in the Dynatrace Environment API or in the info box of a settings screen. The condition will match if the schema's schemaId property of the schema matches.",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "settings:objects:admin",
+            "anchor": "settings-objects-admin",
+            "description": "Enables using admin-mode to access, change ownership and share permissions of any object. Admin-mode only bypasses the ownership check - so to do anything useful, settings:objects:read and/or settings:objects:write are needed as well.",
+            "conditions": [
+              {
+                "key": "settings:schemaId",
+                "description": "A string that uniquely identifies a single settings schema. The identifier of a schema can either be found via the dedicated schema endpoint in the Dynatrace Environment API or in the info box of a settings screen. The condition will match if the object's schemaId property matches.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "!=",
+                  "startsWith",
+                  "NOT startsWith"
+                ]
+              },
+              {
+                "key": "shared:app-id",
+                "description": "A string that matches an app identifier. Only applicable to objects of schemas that have been added via apps. The condition will match if the object's app-id property matches.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              },
+              {
+                "key": "settings:schemaGroup",
+                "description": "A schema group that allows to address multiple individual schemas at once. The group of a schema can either be found via the dedicated schema endpoint in the Dynatrace Environment API or in the info box of a settings screen. The condition will match if the schema of the object has a schemaGroup property that matches.",
+                "operators": [
+                  "IN",
+                  "="
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "slo",
+        "anchor": "slo",
+        "title": "SLO service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "slo:slos:read",
+            "anchor": "slo-slos-read",
+            "description": "Grants permission to read Service-Level Objectives",
+            "conditions": []
+          },
+          {
+            "id": "slo:slos:write",
+            "anchor": "slo-slos-write",
+            "description": "Grants permission to write Service-Level Objectives",
+            "conditions": []
+          },
+          {
+            "id": "slo:objective-templates:read",
+            "anchor": "slo-objective-templates-read",
+            "description": "Grants permission to read Service-Level Objectives Templates",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "state",
+        "anchor": "state",
+        "title": "Platform State Service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "state:app-states:read",
+            "anchor": "state-app-states-read",
+            "description": "Grants permission to read app-states",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state:app-states:write",
+            "anchor": "state-app-states-write",
+            "description": "Grants permission to write app-states",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state:app-states:delete",
+            "anchor": "state-app-states-delete",
+            "description": "Grants permission to delete app-states",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state:user-app-states:read",
+            "anchor": "state-user-app-states-read",
+            "description": "Grants permission to read user-app-states",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state:user-app-states:write",
+            "anchor": "state-user-app-states-write",
+            "description": "Grants permission to write user-app-states",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state:user-app-states:delete",
+            "anchor": "state-user-app-states-delete",
+            "description": "Grants permission to delete user-app-states",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "state-management",
+        "anchor": "state-management",
+        "title": "State Management - Clear app-states and user-app-states of specific apps.",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "state-management:app-states:delete",
+            "anchor": "state-management-app-states-delete",
+            "description": "Grants permission to delete all app-states",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state-management:user-app-states:delete",
+            "anchor": "state-management-user-app-states-delete",
+            "description": "Grants permission to delete user-app-states of the current user",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "state-management:user-app-states:delete-all",
+            "anchor": "state-management-user-app-states-delete-all",
+            "description": "Grants permission to delete user-app-states of all users",
+            "conditions": [
+              {
+                "key": "shared:app-id",
+                "description": "The ID of the app.",
+                "operators": [
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "=",
+                  "!="
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "storage",
+        "anchor": "storage",
+        "title": "Grail",
+        "notes": [
+          "Conditional DENY statements are supported only for the buckets:read permission. All other table-level storage permissions do not support conditional DENY."
+        ],
+        "permissions": [
+          {
+            "id": "storage:events:read",
+            "anchor": "storage-events-read",
+            "description": "Grants permission to read records from the events table.",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.kind",
+                "description": "Gives high-level information about what kind of information the event contains, without being specific to the contents of the event. Helps to determine the record type of a raw event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.type",
+                "description": "The unique type identifier of a given event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.provider",
+                "description": "Source of the event, for example the name of the component or system that generated the event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.namespace.name",
+                "description": "The name of the namespace.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.cluster.name",
+                "description": "The name of the cluster.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:host.name",
+                "description": "Name of the host.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.host_group.id",
+                "description": "Id of the host group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:gcp.project.id",
+                "description": "Google Cloud Platform Project ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:aws.account.id",
+                "description": "Amazon Web Services Account ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.subscription",
+                "description": "Azure subscription.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.resource.group",
+                "description": "Azure resource group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:frontend.name",
+                "description": "The name of the frontend.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:events:write",
+            "anchor": "storage-events-write",
+            "description": "Grants permission to write events to Grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:metrics:read",
+            "anchor": "storage-metrics-read",
+            "description": "Grants permission to read timeseries from the metrics-table",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.namespace.name",
+                "description": "The name of the namespace that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.cluster.name",
+                "description": "The name of the cluster that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:host.name",
+                "description": "Name of the host.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.host_group.id",
+                "description": "Id of the host group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:metric.key",
+                "description": "The identifier of a metric, grouping numeric measurements that share the same measurement semantics (i.e. were measured \"the same way\".)",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:gcp.project.id",
+                "description": "Google Cloud Platform Project ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:aws.account.id",
+                "description": "Amazon Web Services Account ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.subscription",
+                "description": "Azure subscription.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.resource.group",
+                "description": "Azure resource group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:frontend.name",
+                "description": "The name of the frontend.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:metrics:write",
+            "anchor": "storage-metrics-write",
+            "description": "Grants permissions to write metrics from Dynatrace classic to latest Dynatrace and vice versa",
+            "conditions": []
+          },
+          {
+            "id": "storage:logs:read",
+            "anchor": "storage-logs-read",
+            "description": "Grants permission to read records from the logs-table",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.namespace.name",
+                "description": "The name of the namespace that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.cluster.name",
+                "description": "The name of the cluster that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:host.name",
+                "description": "Name of the host.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.host_group.id",
+                "description": "Id of the host group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:log.source",
+                "description": "The location where the log comes from.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:gcp.project.id",
+                "description": "Google Cloud Platform Project ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:aws.account.id",
+                "description": "Amazon Web Services Account ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.subscription",
+                "description": "Azure subscription.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.resource.group",
+                "description": "Azure resource group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:logs:write",
+            "anchor": "storage-logs-write",
+            "description": "Grants permission to write logs to Grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:entities:read",
+            "anchor": "storage-entities-read",
+            "description": "Grants permission to read records from entities",
+            "conditions": [
+              {
+                "key": "storage:entity.type",
+                "description": "The type of the entity.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:spans:read",
+            "anchor": "storage-spans-read",
+            "description": "Grants permission to read records from the spans-table",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.namespace.name",
+                "description": "The name of the namespace that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.cluster.name",
+                "description": "The name of the cluster that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:host.name",
+                "description": "Name of the host.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.host_group.id",
+                "description": "Id of the host group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:gcp.project.id",
+                "description": "Google Cloud Platform Project ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:aws.account.id",
+                "description": "Amazon Web Services Account ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.subscription",
+                "description": "Azure subscription.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.resource.group",
+                "description": "Azure resource group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:bizevents:read",
+            "anchor": "storage-bizevents-read",
+            "description": "Grants permission to read records from the bizevents-table",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.kind",
+                "description": "Gives high-level information about what kind of information the event contains, without being specific to the contents of the event. Helps to determine the record type of a raw event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.type",
+                "description": "The unique type identifier of a given event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.provider",
+                "description": "Source of the event, for example the name of the component or system that generated the event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.namespace.name",
+                "description": "The name of the namespace that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.cluster.name",
+                "description": "The name of the cluster that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:host.name",
+                "description": "Name of the host.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.host_group.id",
+                "description": "Id of the host group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:gcp.project.id",
+                "description": "Google Cloud Platform Project ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:aws.account.id",
+                "description": "Amazon Web Services Account ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.subscription",
+                "description": "Azure subscription.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.resource.group",
+                "description": "Azure resource group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:frontend.name",
+                "description": "The name of the frontend.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:smartscape:read",
+            "anchor": "storage-smartscape-read",
+            "description": "Grants permission to read smartscape nodes and edges from Grail",
+            "conditions": [
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.namespace.name",
+                "description": "The name of the namespace that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.cluster.name",
+                "description": "The name of the cluster that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:host.name",
+                "description": "Name of the host.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.host_group.id",
+                "description": "Id of the host group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:gcp.project.id",
+                "description": "Google Cloud Platform Project ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:aws.account.id",
+                "description": "Amazon Web Services Account ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.subscription",
+                "description": "Azure subscription.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.resource.group",
+                "description": "Azure resource group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:frontend.name",
+                "description": "The name of the frontend.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:system:read",
+            "anchor": "storage-system-read",
+            "description": "Grants permission to read records from all system tables (for example, dt.system.events).",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.kind",
+                "description": "Gives high-level information about what kind of information the event contains, without being specific to the contents of the event. Helps to determine the record type of a raw event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.type",
+                "description": "The unique type identifier of a given event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.provider",
+                "description": "Source of the event, for example the name of the component or system that generated the event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:buckets:read",
+            "anchor": "storage-buckets-read",
+            "description": "Grants permission to read records from Grail buckets. Required additionally to a table permission.",
+            "conditions": [
+              {
+                "key": "storage:table-name",
+                "description": "Table name of the bucket that can be accessed.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:bucket-name",
+                "description": "Name of the bucket that can be accessed.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:query-consumption",
+                "description": "If it is set to INCLUDED, the query returns data only from the configured included timeframe of buckets. If set to ON_DEMAND, it returns data from the entire timeframe. For any other value, the IAM statement is ignored. The included timeframe must be configured per bucket via the Storage Management API.",
+                "operators": [
+                  "="
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:fieldsets:read",
+            "anchor": "storage-fieldsets-read",
+            "description": "Read data from fieldsets",
+            "conditions": [
+              {
+                "key": "storage:table-name",
+                "description": "Name of the table from which fieldset(s) can be accessed.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:bucket-name",
+                "description": "Name of the bucket from which fieldset(s) can be accessed.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:fieldset-name",
+                "description": "Name of the fieldset(s) which can be accessed.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:bucket-definitions:read",
+            "anchor": "storage-bucket-definitions-read",
+            "description": "Grants permission to read bucket definitions from Grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:bucket-definitions:write",
+            "anchor": "storage-bucket-definitions-write",
+            "description": "Grants permission to write bucket definitions to Grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:bucket-definitions:delete",
+            "anchor": "storage-bucket-definitions-delete",
+            "description": "Grants permission to delete bucket definitions from Grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:bucket-definitions:truncate",
+            "anchor": "storage-bucket-definitions-truncate",
+            "description": "Grants permission to delete all records from a bucket (not delete the bucket itself) in Grail.",
+            "conditions": []
+          },
+          {
+            "id": "storage:external-data:load",
+            "anchor": "storage-external-data-load",
+            "description": "Grants permission to load and parse data from configured External Data Stores (for example AWS-based files) so it can be used directly in DQL.",
+            "conditions": [
+              {
+                "key": "storage:store-name",
+                "description": "Name of the External Data Store that can be accessed.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:external-data:list",
+            "anchor": "storage-external-data-list",
+            "description": "Grants permission to list and explore configured External Data Stores and their cloud-based files in DQL.",
+            "conditions": [
+              {
+                "key": "storage:store-name",
+                "description": "Name of the External Data Store that can be accessed.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:external-datastore-definitions:read",
+            "anchor": "storage-external-datastore-definitions-read",
+            "description": "Grants permission to read external datastore definitions from Grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:external-datastore-definitions:write",
+            "anchor": "storage-external-datastore-definitions-write",
+            "description": "Grants permission to write external datastore definitions to Grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:external-datastore-definitions:delete",
+            "anchor": "storage-external-datastore-definitions-delete",
+            "description": "Grants permission to delete external datastore definitions from Grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:records:delete",
+            "anchor": "storage-records-delete",
+            "description": "Delete records in grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:files:read",
+            "anchor": "storage-files-read",
+            "description": "Read data from files.",
+            "conditions": [
+              {
+                "key": "storage:file-path",
+                "description": "Path of the file which can be accessed.",
+                "operators": [
+                  "=",
+                  "startsWith",
+                  "IN"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:files:write",
+            "anchor": "storage-files-write",
+            "description": "Ingest data via REST API",
+            "conditions": [
+              {
+                "key": "storage:file-path",
+                "description": "Path of the file which can be accessed.",
+                "operators": [
+                  "=",
+                  "startsWith",
+                  "IN"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:files:delete",
+            "anchor": "storage-files-delete",
+            "description": "Delete data via REST API",
+            "conditions": [
+              {
+                "key": "storage:file-path",
+                "description": "Path of the file which can be accessed.",
+                "operators": [
+                  "=",
+                  "startsWith",
+                  "IN"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:filter-segments:read",
+            "anchor": "storage-filter-segments-read",
+            "description": "Read filter-segments from grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:filter-segments:write",
+            "anchor": "storage-filter-segments-write",
+            "description": "Write filter-segments in grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:filter-segments:share",
+            "anchor": "storage-filter-segments-share",
+            "description": "Share filter-segments in grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:filter-segments:delete",
+            "anchor": "storage-filter-segments-delete",
+            "description": "Delete own filter-segments in grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:filter-segments:admin",
+            "anchor": "storage-filter-segments-admin",
+            "description": "Write and delete all filter-segments in grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:fieldset-definitions:read",
+            "anchor": "storage-fieldset-definitions-read",
+            "description": "Read fieldset definitions from grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:fieldset-definitions:write",
+            "anchor": "storage-fieldset-definitions-write",
+            "description": "Write and delete fieldset definitions in grail",
+            "conditions": []
+          },
+          {
+            "id": "storage:application.snapshots:read",
+            "anchor": "storage-application-snapshots-read",
+            "description": "Read application.snapshots from grail",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.namespace.name",
+                "description": "The name of the namespace that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.cluster.name",
+                "description": "The name of the cluster that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:host.name",
+                "description": "Name of the host.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.host_group.id",
+                "description": "Id of the host group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:gcp.project.id",
+                "description": "Google Cloud Platform Project ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:aws.account.id",
+                "description": "Amazon Web Services Account ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.subscription",
+                "description": "Azure subscription.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.resource.group",
+                "description": "Azure resource group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:user.events:read",
+            "anchor": "storage-user-events-read",
+            "description": "Read user.events from grail",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:frontend.name",
+                "description": "The name of the frontend.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:user.sessions:read",
+            "anchor": "storage-user-sessions-read",
+            "description": "Read user.sessions from grail",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:frontend.name",
+                "description": "The name of the frontend.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:user.replays:read",
+            "anchor": "storage-user-replays-read",
+            "description": "Read user.replays from grail",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:frontend.name",
+                "description": "The name of the frontend.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:security.events:read",
+            "anchor": "storage-security-events-read",
+            "description": "Read security.events from grail",
+            "conditions": [
+              {
+                "key": "storage:bucket-name",
+                "description": "This condition reduces the effect of the record-level permission to a defined list of buckets.",
+                "operators": [
+                  "=",
+                  "!=",
+                  "IN",
+                  "NOT IN",
+                  "startsWith",
+                  "NOT startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.kind",
+                "description": "Gives high-level information about what kind of information the event contains, without being specific to the contents of the event. Helps to determine the record type of a raw event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.type",
+                "description": "The unique type identifier of a given event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:event.provider",
+                "description": "Source of the event, for example the name of the component or system that generated the event.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.namespace.name",
+                "description": "The name of the namespace that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:k8s.cluster.name",
+                "description": "The name of the cluster that the pod is running in.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:host.name",
+                "description": "Name of the host.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.host_group.id",
+                "description": "Id of the host group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:gcp.project.id",
+                "description": "Google Cloud Platform Project ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:aws.account.id",
+                "description": "Amazon Web Services Account ID.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.subscription",
+                "description": "Azure subscription.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              },
+              {
+                "key": "storage:azure.resource.group",
+                "description": "Azure resource group.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "storage:profiles:read",
+            "anchor": "storage-profiles-read",
+            "description": "Grants permission to read profiles.",
+            "conditions": [
+              {
+                "key": "storage:dt.security_context",
+                "description": "Custom field for security context.",
+                "operators": [
+                  "=",
+                  "IN",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "support-and-services",
+        "anchor": "support-and-services",
+        "title": "Support and Services app — provides customer support access",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "support-and-services:support:read",
+            "anchor": "support-and-services-support-read",
+            "description": "Grants permission to view support cases and chats in the Support and Services app. With this permission, a user sees cases they created and cases they were added to as a collaborator.",
+            "conditions": []
+          },
+          {
+            "id": "support-and-services:support:write",
+            "anchor": "support-and-services-support-write",
+            "description": "Grants permission to create support cases, reply to cases, and start chats in the Support and Services app.",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "synthetic",
+        "anchor": "synthetic",
+        "title": "Synthetic Service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "synthetic:monitors:read",
+            "anchor": "synthetic-monitors-read",
+            "description": "Grants permission to read definitions of synthetic monitors",
+            "conditions": [
+              {
+                "key": "synthetic:dt.security_context",
+                "description": "The name of a security context. Restricts the permission to synthetic monitors assigned to the matching security context.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "synthetic:monitors:write",
+            "anchor": "synthetic-monitors-write",
+            "description": "Grants permission to create synthetic monitors",
+            "conditions": [
+              {
+                "key": "synthetic:dt.security_context",
+                "description": "The name of a security context. Restricts the permission to synthetic monitors assigned to the matching security context.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "synthetic:monitors:execute",
+            "anchor": "synthetic-monitors-execute",
+            "description": "Grants permission to schedule on-demand executions",
+            "conditions": [
+              {
+                "key": "synthetic:dt.security_context",
+                "description": "The name of a security context. Restricts the permission to synthetic monitors assigned to the matching security context.",
+                "operators": [
+                  "IN",
+                  "=",
+                  "startsWith",
+                  "MATCH"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "synthetic:locations:read",
+            "anchor": "synthetic-locations-read",
+            "description": "Grants permission to read definitions of locations",
+            "conditions": []
+          },
+          {
+            "id": "synthetic:locations:write",
+            "anchor": "synthetic-locations-write",
+            "description": "Grants permission to create locations",
+            "conditions": []
+          },
+          {
+            "id": "synthetic:environment-configuration:read",
+            "anchor": "synthetic-environment-configuration-read",
+            "description": "Grants permission to read environment configuration",
+            "conditions": []
+          },
+          {
+            "id": "synthetic:environment-configuration:write",
+            "anchor": "synthetic-environment-configuration-write",
+            "description": "Grants permission to edit environment configuration",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "unified-analysis",
+        "anchor": "unified-analysis",
+        "title": "Unified analysis",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "unified-analysis:screen-definition:read",
+            "anchor": "unified-analysis-screen-definition-read",
+            "description": "Grants permission to read the screen definition of a unified analysis screen",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "upgrade-assistant",
+        "anchor": "upgrade-assistant",
+        "title": "SaaS Upgrade Assistant service",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "upgrade-assistant:environments:write",
+            "anchor": "upgrade-assistant-environments-write",
+            "description": "Grants permission to use the SaaS Upgrade Assistant app",
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "vulnerability-service",
+        "anchor": "vulnerability-service",
+        "title": "Provides APIs to access vulnerabilities that are affecting customer environments",
+        "notes": [],
+        "permissions": [
+          {
+            "id": "vulnerability-service:vulnerabilities:read",
+            "anchor": "vulnerability-service-vulnerabilities-read",
+            "description": "Allows viewing vulnerabilities",
+            "conditions": []
+          },
+          {
+            "id": "vulnerability-service:vulnerabilities:write",
+            "anchor": "vulnerability-service-vulnerabilities-write",
+            "description": "Allows modifying vulnerability related information",
+            "conditions": []
+          }
+        ]
+      }
+    ],
+    "globals": [
+      {
+        "key": "global:environmentId",
+        "anchor": "global-environmentid",
+        "description": "Global condition global:environmentId returns the environmentId for services within the environment's scope.",
+        "operators": []
+      },
+      {
+        "key": "global:userId",
+        "anchor": "global-userid",
+        "description": "Global condition global:userId returns the user ID of the user making the request. The user ID is a UUID.",
+        "operators": []
+      },
+      {
+        "key": "global:usernameDomain",
+        "anchor": "global-usernamedomain",
+        "description": "Global condition global:usernameDomain returns the domain of the user.",
+        "operators": []
+      },
+      {
+        "key": "global:userGroup",
+        "anchor": "global-usergroup",
+        "description": "Global condition global:userGroup returns a list of group IDs the user is a member of. The group ID is a UUID, not the group name.",
+        "operators": []
+      },
+      {
+        "key": "global:date",
+        "anchor": "global-date",
+        "description": "",
+        "operators": [
+          "<",
+          ">",
+          "="
+        ]
+      },
+      {
+        "key": "global:date-time",
+        "anchor": "global-date-time",
+        "description": "",
+        "operators": [
+          "<",
+          ">"
+        ]
+      },
+      {
+        "key": "global:time-of-day",
+        "anchor": "global-time-of-day",
+        "description": "",
+        "operators": [
+          "<",
+          ">"
+        ]
+      },
+      {
+        "key": "global:week-day",
+        "anchor": "global-week-day",
+        "description": "",
+        "operators": [
+          "=",
+          "!=",
+          "IN"
+        ]
+      }
+    ]
+  }
+}
