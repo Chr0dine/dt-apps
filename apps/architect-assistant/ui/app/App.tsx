@@ -35,7 +35,7 @@ import { IamPolicyTab } from "./tabs/IamPolicyTab";
 import { IamBoundaryTab } from "./tabs/IamBoundaryTab";
 import { IamAccessTab } from "./tabs/IamAccessTab";
 import { IamDraftsProvider } from "./iamDrafts";
-import { AREA_BY_ID, AREAS, AreaPicker, locateTab, TAB_TITLES, type AreaId, type TabId } from "./areas";
+import { AREA_BY_ID, AREAS, AreaPicker, locateTab, TAB_TITLES, TabDocsLink, type AreaId, type TabId } from "./areas";
 
 export function App() {
   const [tf, setTf] = useState<Timeframe>(DEFAULT_TIMEFRAME);
@@ -226,6 +226,7 @@ export function App() {
           >
             {AREA_BY_ID[area].tabs.map((id) => (
               <Tab key={id} title={TAB_TITLES[id]}>
+                <TabDocsLink tab={id} />
                 {tabContent(id)}
               </Tab>
             ))}

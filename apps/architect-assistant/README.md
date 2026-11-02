@@ -2,6 +2,8 @@
 
 A Dynatrace AppEngine app that helps an architect confirm which onboarding best practices are **in place vs missing** in a tenant, with a coverage score per check and drill-down to the entities that are missing them.
 
+**Detailed documentation:** [docs/](docs/README.md) has one page per tab: every section, check, DQL query (in full, explained line by line), API call and remediation action. Each tab links to its page in its top-right corner (`TAB_DOCS` in `ui/app/areas.tsx`).
+
 ## What it checks (v1)
 
 An **area** dropdown above the tabs picks which tabs are shown; each area has its own glyph and colour (the colour edges the bar the dropdown sits on), and remembers the tab you last opened in it. Links that jump to another tab (Top findings, the (i) buttons, the Frontends gauge) switch the area too.

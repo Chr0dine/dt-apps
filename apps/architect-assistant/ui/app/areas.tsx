@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentTheme } from "@dynatrace/strato-components/core";
 import { Select } from "@dynatrace/strato-components/forms";
-import { Text } from "@dynatrace/strato-components/typography";
+import { ExternalLink, Text } from "@dynatrace/strato-components/typography";
 import { KeyIcon, LabelIcon, UpgradeIcon, ViewIcon } from "@dynatrace/strato-icons";
 import { categoryColor, type Category, type Theme } from "./kubernetes";
 import type { RemediationTab } from "./navigation";
@@ -52,6 +52,46 @@ export const TAB_TITLES: Record<TabId, string> = {
   "iam-boundary": "IAM Boundary Creator",
   "iam-access": "Permissions Test",
 };
+
+/** Each tab's documentation page in the repository (`docs/<file>`); every tab links to it on GitHub. */
+const DOCS_BASE_URL = "https://github.com/Chr0dine/dt-apps/blob/main/apps/architect-assistant/docs/";
+
+export const TAB_DOCS: Record<TabId, string> = {
+  overview: "entity-overview.md",
+  data: "data-overview.md",
+  hostgroups: "host-groups.md",
+  security: "security-context.md",
+  cost: "cost-allocation.md",
+  ownership: "ownership-and-teams.md",
+  "primary-tags": "primary-tags.md",
+  slos: "slos.md",
+  segments: "segments.md",
+  "problem-notifications": "problem-notifications.md",
+  oneagent: "oneagents.md",
+  deep: "deep-monitoring.md",
+  frontends: "frontends.md",
+  activegates: "activegates.md",
+  kubernetes: "kubernetes.md",
+  databases: "databases.md",
+  extensions: "extensions.md",
+  sdv2: "service-detection-v2.md",
+  "iam-policy": "iam-policy-creator.md",
+  "iam-boundary": "iam-boundary-creator.md",
+  "iam-access": "permissions-test.md",
+};
+
+export const tabDocsUrl = (tab: TabId): string => DOCS_BASE_URL + TAB_DOCS[tab];
+
+/** Link to the tab's documentation on GitHub, right-aligned above the tab content. */
+export function TabDocsLink({ tab }: { tab: TabId }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+      <Text textStyle="small">
+        <ExternalLink href={tabDocsUrl(tab)}>{TAB_TITLES[tab]} documentation</ExternalLink>
+      </Text>
+    </div>
+  );
+}
 
 export type AreaId = "metadata" | "migration" | "visibility" | "iam";
 
