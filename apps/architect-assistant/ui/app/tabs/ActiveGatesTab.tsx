@@ -10,6 +10,7 @@ import Colors from "@dynatrace/strato-design-tokens/colors";
 import Spacings from "@dynatrace/strato-design-tokens/spacings";
 import Borders from "@dynatrace/strato-design-tokens/borders";
 import { useDql } from "../useDql";
+import { useNav } from "../navigation";
 import { useAIInsights } from "../AIInsights";
 import { analyzeActiveGates } from "../analyses";
 import {
@@ -32,7 +33,6 @@ import type { ManualAction, SubmitResult } from "../remediation";
 import { categoryColor, type Category, type Theme } from "../kubernetes";
 import { ActionPicker, ApiFix, DocsStatusLine, SEVERITY_ORDER, STATUS_COLOR, STATUS_LABEL, type ActionDef, type Severity } from "./DeepMonitoringTab";
 import { Donut, type Slice } from "./ModePie";
-import { NetworkZoneMap } from "./NetworkZoneMap";
 import { BarList, LineMini, ModuleMatrix, SERIES_BLUE, STATE_ORDER, STATUS_PALETTE, StackedBar, StateLegend, StateSwatch, type BarRow, type Segment } from "./AgCharts";
 import {
   AG_UPDATES_SCHEMA,
@@ -146,7 +146,6 @@ const card: React.CSSProperties = {
 const hint: React.CSSProperties = { fontSize: 12, opacity: 0.7 };
 const AG_ANCHOR = "remediation-activegates";
 const LOGS_ANCHOR = "activegate-logs";
-const ZONES_ANCHOR = "activegate-network-zones";
 const DONUT_SIZE = 150;
 const plural = (x: number, one: string, many = `${one}s`) => `${x.toLocaleString()} ${x === 1 ? one : many}`;
 const json = (v: unknown) => JSON.stringify(v, null, 2);
@@ -156,9 +155,9 @@ const scrollTo = (id: string) => setTimeout(() => document.getElementById(id)?.s
 // Data: five DQL queries (inventory, self-monitoring, module detail, extension statuses and their messages) and three
 // API reads (update settings, target version, ActiveGate tokens). API reads that fail leave their checks out.
 // ---------------------------------------------------------------------------
-type Load<T> = { status: "loading" } | { status: "ok"; value: T } | { status: "error"; message: string };
+export type Load<T> = { status: "loading" } | { status: "ok"; value: T } | { status: "error"; message: string };
 
-function useApi<T>(fn: () => Promise<T>, scope: string, key = 0): Load<T> {
+export function useApi<T>(fn: () => Promise<T>, scope: string, key = 0): Load<T> {
   const [state, setState] = useState<Load<T>>({ status: "loading" });
   useEffect(() => {
     let cancelled = false;
@@ -332,7 +331,7 @@ function CheckList({ checks }: { checks: AgCheck[] }) {
   );
 }
 
-function StatusCell({ status, count }: { status: CheckStatus; count: number }) {
+export function StatusCell({ status, count }: { status: CheckStatus; count: number }) {
   return (
     <Flex gap={6} alignItems="center">
       <span style={{ width: 9, height: 9, borderRadius: 5, background: STATUS_COLOR[status], flex: "none" }} />
@@ -345,7 +344,7 @@ function StatusCell({ status, count }: { status: CheckStatus; count: number }) {
 }
 
 /** Links on this tab: page text colour with an underline (the default link blue is unreadable on the dark theme). */
-const linkStyle: React.CSSProperties = { color: "inherit", textDecoration: "underline", textUnderlineOffset: 2 };
+export const linkStyle: React.CSSProperties = { color: "inherit", textDecoration: "underline", textUnderlineOffset: 2 };
 
 function DiagnoseButton({ selected, onClick }: { selected: boolean; onClick: () => void }) {
   return (
@@ -1115,7 +1114,7 @@ function ExtensionLogsCard({ data }: { data: AgData }) {
 const NEW_VALUE = "__new__";
 
 /** Sets or clears the group or network zone of host-based ActiveGates with ONE remote configuration job (validate + preview first). */
-function AssignForm({ ags, initial, attr: initialAttr = "group", values }: { ags: ActiveGate[]; initial?: ActiveGate[]; attr?: RemoteAttr; values: Record<RemoteAttr, string[]> }) {
+export function AssignForm({ ags, initial, attr: initialAttr = "group", values }: { ags: ActiveGate[]; initial?: ActiveGate[]; attr?: RemoteAttr; values: Record<RemoteAttr, string[]> }) {
   const eligible = useMemo(() => ags.filter(remotelyConfigurable), [ags]);
   const containerized = ags.filter((a) => !remotelyConfigurable(a));
   const [attr, setAttr] = useState<RemoteAttr>(initialAttr);
@@ -1249,7 +1248,7 @@ function AssignForm({ ags, initial, attr: initialAttr = "group", values }: { ags
 }
 
 /** Fallback mode and alternative zones of one network zone (PUT the zone's object, or POST a new one). */
-function FallbackForm({ zones, settings, initialZone, onDone }: { zones: ZoneRow[]; settings: ZoneSettings; initialZone?: string; onDone: () => void }) {
+export function FallbackForm({ zones, settings, initialZone, onDone }: { zones: ZoneRow[]; settings: ZoneSettings; initialZone?: string; onDone: () => void }) {
   const editable = zones.filter((z) => z.zone !== DEFAULT_ZONE);
   const [zone, setZone] = useState(editable.find((z) => z.zone === initialZone)?.zone ?? editable[0]?.zone ?? "");
   const row = editable.find((z) => z.zone === zone);
@@ -1321,7 +1320,7 @@ function FallbackForm({ zones, settings, initialZone, onDone }: { zones: ZoneRow
   );
 }
 
-function EnableZonesForm({ settings, onDone }: { settings: ZoneSettings; onDone: () => void }) {
+export function EnableZonesForm({ settings, onDone }: { settings: ZoneSettings; onDone: () => void }) {
   if (settings.enabled) return <Text>Network zones are already turned on for this environment.</Text>;
   const value = { ...(settings.enabledObj?.value ?? {}), enabled: true };
   return (
@@ -1389,88 +1388,35 @@ function GroupsCard({ data }: { data: AgData }) {
   );
 }
 
-/** Network zones: the topology map (routing and fallback simulation), the zones table, and the zone forms. */
-function NetworkZonesSection({ data, theme, onDiagnose }: { data: AgData; theme: Theme; onDiagnose: (ag: ActiveGate) => void }) {
-  const { zones, zoneSettings, states, queries, ags, health } = data;
-  const off = zoneSettings.status === "ok" && !zoneSettings.value.enabled;
-  const zoneColumns = useMemo<DataTableColumnDef<ZoneRow>[]>(
-    () => [
-      { id: "status", header: "Status", accessor: (z) => CHECK_ORDER.indexOf(z.status), width: 100, cell: ({ rowData: z }) => <StatusCell status={z.status} count={0} /> },
-      { id: "zone", header: "Network zone", accessor: "zone", width: 200, cell: ({ rowData: z }) => <Text style={{ fontSize: 12, fontWeight: 600, wordBreak: "break-word" }}>{z.zone}</Text> },
-      {
-        id: "fallback",
-        header: "Fallback",
-        accessor: "fallback",
-        width: 190,
-        cell: ({ rowData: z }) => (
-          <span title={FALLBACK_TEXT[z.fallback]}>
-            <Text style={{ fontSize: 12, display: "block", fontWeight: z.fallback === "NONE" ? 700 : undefined, color: z.fallback === "NONE" ? STATUS_COLOR.warn : undefined }}>{FALLBACK_LABEL[z.fallback] ?? (z.fallback || "not read")}</Text>
-            <Text style={{ fontSize: 11, opacity: 0.7, display: "block" }}>{z.fallback ? (z.configured ? "configured" : "not configured (default)") : ""}</Text>
-          </span>
-        ),
-      },
-      { id: "alternatives", header: "Alternative zones", accessor: (z) => z.alternatives.join(", "), width: 160, cell: ({ rowData: z }) => <Text style={{ fontSize: 12 }}>{z.alternatives.length ? z.alternatives.join(", ") : "none"}</Text> },
-      { id: "ags", header: "ActiveGates (connected)", accessor: (z) => z.online, width: 260, cell: ({ rowData: z }) => <Text style={{ fontSize: 12, wordBreak: "break-word" }}>{`${z.online} of ${z.ags.length}`}{z.ags.length ? `: ${z.ags.map((a) => a.name).join(", ")}` : ""}</Text> },
-      { id: "oneAgents", header: "OneAgents", accessor: "oneAgents", width: 100 },
-      { id: "note", header: "Finding", accessor: "note", width: 340, cell: ({ rowData: z }) => <Text style={{ fontSize: 12 }}>{z.note}</Text> },
-    ],
-    [],
-  );
+/** Opens the Network Zones tab (map, outage simulation, zones and their OneAgent connections). */
+function ZonesTabButton() {
+  const nav = useNav();
   return (
-    <Flex id={ZONES_ANCHOR} flexDirection="column" gap={16}>
-      <div>
-        <Heading level={3}>Network zones</Heading>
-        <Text style={{ display: "block" }}>
-          Which ActiveGates are in each network zone, where each zone&apos;s OneAgents send their traffic, and what happens when ActiveGates go down: OneAgents use ActiveGates of their own zone first, then its alternative zones, then (as the
-          zone&apos;s fallback allows) the default zone and any other ActiveGate. Zones come from the network zone settings (builtin:networkzones.zones) and from what ActiveGates and OneAgents report.
-        </Text>
-      </div>
-      {zoneSettings.status === "error" && <Text style={{ color: STATUS_COLOR.fail, display: "block" }}>Network zone settings not readable: {zoneSettings.message}</Text>}
-      {off && (
-        <div role="status" style={{ padding: "8px 12px", borderRadius: 6, borderLeft: `4px solid ${STATUS_COLOR.warn}`, background: "rgba(128,128,128,0.06)" }}>
-          <Text>
-            <strong>Network zones are turned off</strong> for this environment (Settings › Preferences › Network zones), so zone assignments and fallback modes do not route traffic yet. Turn them on below or in Remediation actions.
+    <Button variant="emphasized" onClick={() => nav.openTab("networkzones")}>
+      Open the Network Zones tab
+    </Button>
+  );
+}
+
+/** Network zones have their own tab; this card summarises the zones of the ActiveGates and links there. */
+function NetworkZonesPointer({ data }: { data: AgData }) {
+  const { zones, zoneSettings } = data;
+  const off = zoneSettings.status === "ok" && !zoneSettings.value.enabled;
+  const findings = zones.filter((z) => z.status === "fail" || z.status === "warn");
+  return (
+    <div style={card}>
+      <Flex justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={12}>
+        <div style={{ maxWidth: 820 }}>
+          <Heading level={4}>Network zones</Heading>
+          <Text style={{ ...hint, display: "block" }}>
+            {plural(zones.length, "network zone")}, {plural(zones.filter((z) => z.ags.length).length, "zone")} with ActiveGates{off ? "; network zones are turned off for this environment" : ""}
+            {findings.length ? `; findings in ${findings.map((z) => z.zone).join(", ")}` : ""}. The Network Zones tab has the zone map with outage simulation, the zones with their ActiveGates, and which OneAgents are routed to
+            which ActiveGate.
           </Text>
         </div>
-      )}
-      <QueryState state={states.zoneAgents}>
-        <NetworkZoneMap ags={ags} zones={zones} health={health} zonesEnabled={zoneSettings.status === "ok" ? zoneSettings.value.enabled : undefined} theme={theme} onDiagnose={onDiagnose} />
-      </QueryState>
-      <div style={card}>
-        <Heading level={4}>Network zones and their fallback</Heading>
-        <Text style={{ ...hint, display: "block", marginBottom: Spacings.Size8 }}>One row per zone that is configured or used by an ActiveGate or OneAgent; findings first.</Text>
-        <QueryState state={states.zoneAgents}>
-          <DataTable data={zones} columns={zoneColumns} sortable resizable defaultLineWrap fullWidth variant={{ rowDensity: "condensed" }}>
-            <DataTable.EmptyState>No network zone.</DataTable.EmptyState>
-          </DataTable>
-        </QueryState>
-        <details style={{ marginTop: Spacings.Size12 }}>
-          <summary style={{ cursor: "pointer", fontWeight: 600 }}>Set the network zone of ActiveGates (API)</summary>
-          <div style={{ marginTop: Spacings.Size8 }}>
-            <AssignForm ags={ags} attr="networkZone" values={zoneValues(data)} />
-          </div>
-        </details>
-        {zoneSettings.status === "ok" && (
-          <details style={{ marginTop: Spacings.Size8 }}>
-            <summary style={{ cursor: "pointer", fontWeight: 600 }}>Set the fallback and alternative zones of a network zone (API)</summary>
-            <div style={{ marginTop: Spacings.Size8 }}>
-              <FallbackForm zones={zones} settings={zoneSettings.value} onDone={data.reloadZones} />
-            </div>
-          </details>
-        )}
-        {off && zoneSettings.status === "ok" && (
-          <details style={{ marginTop: Spacings.Size8 }}>
-            <summary style={{ cursor: "pointer", fontWeight: 600 }}>Turn on network zones (API)</summary>
-            <div style={{ marginTop: Spacings.Size8 }}>
-              <EnableZonesForm settings={zoneSettings.value} onDone={data.reloadZones} />
-            </div>
-          </details>
-        )}
-        <div style={{ marginTop: Spacings.Size8 }}>
-          <QueryActions title="ActiveGates: OneAgents per network zone" query={queries.zoneAgents} />
-        </div>
-      </div>
-    </Flex>
+        <ZonesTabButton />
+      </Flex>
+    </div>
   );
 }
 
@@ -1850,15 +1796,13 @@ function buildActions(ag: ActiveGate, checks: AgCheck[], d: AgData, onLogs: (ag?
     zone: [
       {
         id: "zone-map",
-        label: "Show the zone's routing on the network zone map",
+        label: "Show the zone's routing on the Network Zones tab",
         kind: "manual",
         node: (
           <Flex flexDirection="column" gap={8}>
-            <Text>The map shows where the OneAgents of {zone} send their traffic, and lets you simulate an outage of {ag.name} or its zone and try another fallback mode.</Text>
+            <Text>The Network Zones tab maps where the OneAgents of {zone} send their traffic, which OneAgents are routed to {ag.name}, and lets you simulate an outage of {ag.name} or its zone and try another fallback mode.</Text>
             <div>
-              <Button variant="emphasized" onClick={() => scrollTo(ZONES_ANCHOR)}>
-                Open the network zone map
-              </Button>
+              <ZonesTabButton />
             </div>
           </Flex>
         ),
@@ -2196,7 +2140,7 @@ export function ActiveGatesTab({ tf }: { tf: Timeframe }) {
             </div>
           </div>
           <GroupsCard data={data} />
-          <NetworkZonesSection data={data} theme={theme} onDiagnose={select} />
+          <NetworkZonesPointer data={data} />
           <ModuleDetailCard data={data} onSelect={select} />
           <ExtensionsCard data={data} />
           <ExtensionLogsCard data={data} />

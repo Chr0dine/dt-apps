@@ -886,3 +886,36 @@ export function analyzeIamAccess(d: IamAccessInsightInput): AIInsightsData {
   recommendations.push({ impact: "low", text: "Open a limited table's Records query in a Notebook to see the records behind the limits (it runs with your own permissions)." });
   return { summary, insights, recommendations };
 }
+
+export type NetworkZoneInsightInput = {
+  /** null = the network zone settings were not read. */
+  zonesEnabled: boolean | null;
+  zones: Array<{ zone: string; oneAgents: number; ags: number; routing: number; fallback: string; dropped: boolean; outage: "survives" | "dropped" | "n/a"; outageGroup: number | null }>;
+  /** ActiveGates whose measured share of connected OneAgent modules differs most from the share routing gives them. */
+  imbalance: Array<{ name: string; expectedPct: number; measuredPct: number }>;
+  selection: string | null;
+};
+
+export function analyzeNetworkZones(d: NetworkZoneInsightInput): AIInsightsData {
+  const used = d.zones.filter((z) => z.oneAgents > 0);
+  const oneAgents = used.reduce((n, z) => n + z.oneAgents, 0);
+  if (d.zones.length === 0) {
+    return { summary: "No network zone, ActiveGate or OneAgent was found for this timeframe.", insights: [], recommendations: [{ impact: "low", text: "Deploy ActiveGates and OneAgents first; zones only matter once traffic is routed through ActiveGates." }] };
+  }
+  const fragile = used.filter((z) => z.outage === "dropped");
+  const noOwn = used.filter((z) => z.routing === 0);
+  const summary = `${d.zones.length} network ${plural(d.zones.length, "zone")}, ${used.length} with OneAgents (${oneAgents.toLocaleString()} in total). ${fragile.length ? `${fragile.length} ${plural(fragile.length, "zone loses", "zones lose")} its OneAgents' traffic if ${plural(fragile.length, "its", "their")} own ActiveGates go down.` : "Every zone with OneAgents keeps sending traffic when its own ActiveGates go down."}`;
+  const insights: InsightItem[] = [];
+  if (d.zonesEnabled === false) insights.push({ severity: "info", icon: "🗺️", text: "Network zones are turned off for the environment: zone assignments and fallback modes do not route OneAgent traffic yet." });
+  for (const z of used.filter((x) => x.dropped)) insights.push({ severity: "critical", icon: "⛔", text: `Zone ${z.zone}: ${z.oneAgents} OneAgents have no ActiveGate they may use (fallback ${z.fallback}); their traffic is dropped.` });
+  for (const z of fragile.filter((x) => !x.dropped)) insights.push({ severity: "warning", icon: "🧯", text: `Zone ${z.zone}: if its ${z.routing} routing ActiveGates fail, the fallback (${z.fallback}) leaves its ${z.oneAgents} OneAgents without an ActiveGate.` });
+  for (const z of noOwn.filter((x) => !x.dropped)) insights.push({ severity: "info", icon: "↪️", text: `Zone ${z.zone} has no routing ActiveGate of its own: its ${z.oneAgents} OneAgents use group ${z.outageGroup ?? "?"} ActiveGates.` });
+  for (const i of d.imbalance) insights.push({ severity: "info", icon: "⚖️", text: `${i.name}: ${i.measuredPct}% of the connected OneAgent modules, while zone routing gives it ${i.expectedPct}% of the OneAgents.` });
+  if (d.selection) insights.push({ severity: "info", icon: "🔎", text: d.selection });
+  const recommendations: RecommendationItem[] = [];
+  if (fragile.length) recommendations.push({ impact: "high", text: "Give fragile zones a second routing ActiveGate, an alternative zone, or a fallback that reaches the default zone." });
+  if (noOwn.length) recommendations.push({ impact: "medium", text: "Zones whose OneAgents always fall back to other zones send traffic across network boundaries: add an ActiveGate in the zone or make the target an alternative zone on purpose." });
+  if (d.zonesEnabled === false) recommendations.push({ impact: "low", text: "Plan zones and their names, then turn network zones on; until then the map shows how traffic would be routed." });
+  recommendations.push({ impact: "low", text: "Which ActiveGate a single OneAgent uses is not reported by Dynatrace: the connection view shows the ActiveGates it is load-balanced over by its zone, next to the measured load per ActiveGate." });
+  return { summary, insights, recommendations };
+}

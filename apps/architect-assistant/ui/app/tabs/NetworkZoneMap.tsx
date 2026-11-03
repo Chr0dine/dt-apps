@@ -17,7 +17,6 @@ import {
   routingPlan,
   shortVersion,
   type ActiveGate,
-  type AgHealth,
   type PriorityGroup,
   type RoutingPlan,
   type ZoneRow,
@@ -135,18 +134,19 @@ const PLAY_MS = 2600;
 export function NetworkZoneMap({
   ags,
   zones,
-  health,
+  agents,
   zonesEnabled,
   theme,
-  onDiagnose,
+  onInspect,
 }: {
   ags: ActiveGate[];
   zones: ZoneRow[];
-  health: Map<string, AgHealth>;
+  /** Connected OneAgent modules per ActiveGate (peak). */
+  agents: Map<string, number>;
   /** undefined = the network zone settings were not read. */
   zonesEnabled?: boolean;
   theme: Theme;
-  onDiagnose: (ag: ActiveGate) => void;
+  onInspect: (ag: ActiveGate) => void;
 }) {
   ensureStyles();
   const reducedMotion = useMemo(() => typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches, []);
@@ -199,11 +199,11 @@ export function NetworkZoneMap({
       for (const a of plan.target.available) {
         const to = layout.nodes.get(a.agId);
         if (!to) continue;
-        out.push({ key: `${zone}->${a.agId}@${plan.target.prio}`, zone, agId: a.agId, prio: plan.target.prio, d: flowPath(from, to, plan.target.prio === 1 || (zone === DEFAULT_ZONE && plan.target.prio === 3)), load: health.get(a.agId)?.agents ?? 0 });
+        out.push({ key: `${zone}->${a.agId}@${plan.target.prio}`, zone, agId: a.agId, prio: plan.target.prio, d: flowPath(from, to, plan.target.prio === 1 || (zone === DEFAULT_ZONE && plan.target.prio === 3)), load: agents.get(a.agId) ?? 0 });
       }
     }
     return out;
-  }, [plans, layout, health]);
+  }, [plans, layout, agents]);
 
   const toggleFailed = (agId: string) => {
     setPlay(null);
@@ -231,7 +231,7 @@ export function NetworkZoneMap({
   const toViewUnits = () => VIEW_W / Math.max(1, svgRef.current?.clientWidth ?? VIEW_W);
 
   const agTip = (a: ActiveGate) => {
-    const h = health.get(a.agId);
+    const connected = agents.get(a.agId);
     const state = failed.has(a.agId) || effectiveFailed.has(a.agId) ? "Down (simulation)" : !a.online ? "Not connected" : routesOneAgents(a) ? "Routes OneAgent traffic" : "No OneAgent routing (module off)";
     return (
       <>
@@ -243,9 +243,9 @@ export function NetworkZoneMap({
         Zone {a.networkZone || DEFAULT_ZONE} · version {shortVersion(a.version) || "—"}
         <br />
         {state}
-        {h?.agents !== null && h?.agents !== undefined ? ` · ${Math.round(h.agents)} OneAgent modules connected (peak)` : ""}
+        {connected !== undefined ? ` · ${Math.round(connected)} OneAgent modules connected (peak)` : ""}
         <br />
-        <span style={{ opacity: 0.75 }}>{mode === "simulate" ? "Click to take it down / bring it back (simulation)" : "Click to diagnose"}</span>
+        <span style={{ opacity: 0.75 }}>{mode === "simulate" ? "Click to take it down / bring it back (simulation)" : "Click to show its connections"}</span>
       </>
     );
   };
@@ -289,7 +289,7 @@ export function NetworkZoneMap({
         </div>
         <Flex gap={8} alignItems="center" flexWrap="wrap">
           <ToggleButtonGroup value={mode} onChange={(v: string) => v && setMode(v as "inspect" | "simulate")} name="nz-mode" aria-label="Click on an ActiveGate">
-            <ToggleButtonGroup.Item value="inspect">Click: diagnose</ToggleButtonGroup.Item>
+            <ToggleButtonGroup.Item value="inspect">Click: show connections</ToggleButtonGroup.Item>
             <ToggleButtonGroup.Item value="simulate">Click: simulate outage</ToggleButtonGroup.Item>
           </ToggleButtonGroup>
           <Button size="condensed" onClick={() => zoomBy(1 / 1.2)} aria-label="Zoom out">
@@ -423,7 +423,7 @@ export function NetworkZoneMap({
                 const routes = routesOneAgents(a);
                 const fill = down ? "#5c5c5c" : !a.online ? neutral : routes ? routing : neutral;
                 const target = flows.some((f) => f.agId === a.agId);
-                const load = health.get(a.agId)?.agents;
+                const load = agents.get(a.agId);
                 return (
                   <g
                     key={a.agId}
@@ -438,7 +438,7 @@ export function NetworkZoneMap({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (mode === "simulate") toggleFailed(a.agId);
-                      else onDiagnose(a);
+                      else onInspect(a);
                     }}
                   >
                     {target && !reducedMotion && <circle cx={pos.x} cy={pos.y} r={AG_R + 4} fill="none" stroke={fill} strokeWidth={1.5} opacity={0.5} />}

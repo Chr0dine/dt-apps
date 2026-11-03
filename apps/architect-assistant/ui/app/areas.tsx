@@ -19,6 +19,7 @@ export type TabId =
   | "deep"
   | "frontends"
   | "activegates"
+  | "networkzones"
   | "kubernetes"
   | "databases"
   | "extensions"
@@ -44,6 +45,7 @@ export const TAB_TITLES: Record<TabId, string> = {
   deep: "Deep Monitoring",
   frontends: "Frontends",
   activegates: "ActiveGates",
+  networkzones: "Network Zones",
   kubernetes: "Kubernetes",
   databases: "Databases",
   extensions: "Extensions",
@@ -71,6 +73,7 @@ export const TAB_DOCS: Record<TabId, string> = {
   deep: "deep-monitoring.md",
   frontends: "frontends.md",
   activegates: "activegates.md",
+  networkzones: "network-zones.md",
   kubernetes: "kubernetes.md",
   databases: "databases.md",
   extensions: "extensions.md",
@@ -120,8 +123,8 @@ export const AREAS: Area[] = [
     label: "Visibility",
     slot: 3,
     icon: ViewIcon,
-    detail: "What is monitored and how well: OneAgents, code modules, frontends, ActiveGates, Kubernetes, databases, extensions and service detection.",
-    tabs: ["oneagent", "deep", "frontends", "activegates", "kubernetes", "databases", "extensions", "sdv2"],
+    detail: "What is monitored and how well: OneAgents, code modules, frontends, ActiveGates, network zones, Kubernetes, databases, extensions and service detection.",
+    tabs: ["oneagent", "deep", "frontends", "activegates", "networkzones", "kubernetes", "databases", "extensions", "sdv2"],
   },
   {
     id: "iam",

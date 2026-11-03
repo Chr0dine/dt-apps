@@ -623,6 +623,23 @@ export const networkZoneAgentsQuery = (tf: Timeframe) => `smartscapeNodes "ONEAG
 | summarize oneAgents = count(), by:{zone = dt.network_zone.id}
 | sort oneAgents desc`;
 
+/** Connected OneAgent modules per ActiveGate (peak over the timeframe): the measured load the Network Zones tab compares with the routing. */
+export const activeGateAgentsQuery = (tf: Timeframe) => `timeseries agents = max(dt.sfm.active_gate.communication.agent_modules.connected, scalar:true), by:{dt.active_gate.id}, ${NOT_EMBEDDED}, ${from(tf)}
+| fields agId = dt.active_gate.id, agents`;
+
+export const NETWORK_ZONE_ONEAGENT_LIMIT = 5000;
+/**
+ * Every OneAgent with its network zone and its host (name, host group, Kubernetes cluster), one traverse over the
+ * "monitors" edge. Dynatrace does not report which ActiveGate a OneAgent is connected to; the tab derives it from the zone.
+ */
+export const networkZoneOneAgentsQuery = (tf: Timeframe) => `smartscapeNodes "ONEAGENT", ${from(tf)}
+| traverse edgeTypes:{monitors}, targetTypes:{HOST}, fieldsKeep:{id, name, dt.network_zone.id, dt.agent.module.version, dt.agent.monitoring_mode}
+| fieldsAdd agent = dt.traverse.history[0]
+| fields agentId = agent[id], zone = agent[\`dt.network_zone.id\`], version = agent[\`dt.agent.module.version\`], mode = agent[\`dt.agent.monitoring_mode\`],
+    hostId = id, hostName = name, hostGroup = dt.host_group.id, cluster = k8s.cluster.name
+| sort zone asc, hostName asc
+| limit ${NETWORK_ZONE_ONEAGENT_LIMIT}`;
+
 /** Communication and resources of one ActiveGate over time (96 buckets), for the diagnosis charts. */
 export const activeGateTrendQuery = (tf: Timeframe, agId: string) => `timeseries {
     dropped = sum(dt.sfm.active_gate.communication.messages.dropped, default:0),

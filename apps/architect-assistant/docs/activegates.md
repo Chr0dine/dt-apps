@@ -1,13 +1,13 @@
 # ActiveGates
 
-The ActiveGates tab lists every environment ActiveGate in the tenant: routing and monitoring, synthetic and zRemote, host-based and containerized. For each one it shows which modules are enabled and whether they are used, its self-monitoring data (rejected, dropped and resent messages, outgoing queue, heap, disk, CPU, AWS and Kubernetes module metrics), the extension configurations that run on ActiveGate groups, its version compared with the target version, its update mode, when its token expires, and its ActiveGate group and network zone. A network zone map shows where each zone's OneAgents send traffic, and you can simulate outages on it. You can collect support archives (logs), and a Diagnose flow checks one ActiveGate and offers fixes, some through the API and some as manual steps.
+The ActiveGates tab lists every environment ActiveGate in the tenant: routing and monitoring, synthetic and zRemote, host-based and containerized. For each one it shows which modules are enabled and whether they are used, its self-monitoring data (rejected, dropped and resent messages, outgoing queue, heap, disk, CPU, AWS and Kubernetes module metrics), the extension configurations that run on ActiveGate groups, its version compared with the target version, its update mode, when its token expires, and its ActiveGate group and network zone. Network zones (map, outage simulation, OneAgent connections) are on the [Network Zones](network-zones.md) tab. You can collect support archives (logs), and a Diagnose flow checks one ActiveGate and offers fixes, some through the API and some as manual steps.
 
 | | |
 | --- | --- |
 | Area | Visibility (see [index](README.md)) |
 | Tab id | `activegates` |
 | Counts toward Entity Overview readiness / Top findings | no. Nothing on this tab feeds Entity Overview readiness or Top findings. |
-| Main source files | [ActiveGatesTab.tsx](../ui/app/tabs/ActiveGatesTab.tsx), [activeGates.ts](../ui/app/activeGates.ts), [AgCharts.tsx](../ui/app/tabs/AgCharts.tsx), [NetworkZoneMap.tsx](../ui/app/tabs/NetworkZoneMap.tsx), [queries.ts](../ui/app/queries.ts) (ActiveGates block), [analyses.ts](../ui/app/analyses.ts) (`analyzeActiveGates`) |
+| Main source files | [ActiveGatesTab.tsx](../ui/app/tabs/ActiveGatesTab.tsx), [activeGates.ts](../ui/app/activeGates.ts), [AgCharts.tsx](../ui/app/tabs/AgCharts.tsx), [queries.ts](../ui/app/queries.ts) (ActiveGates block), [analyses.ts](../ui/app/analyses.ts) (`analyzeActiveGates`) |
 
 ## Contents
 
@@ -358,89 +358,9 @@ Fallback modes (`FALLBACK_TEXT`):
 - **Only default zone**: groups 1 to 3.
 - **None (drop traffic)**: groups 1 and 2. "OneAgents send no data to another zone."
 
-#### Network zone map
+#### Network zones card
 
-A custom SVG topology (`NetworkZoneMap` in [NetworkZoneMap.tsx](../ui/app/tabs/NetworkZoneMap.tsx)), inside the Q6 loading and error state. **Nothing on the map is saved.**
-
-**Zones** are rounded containers laid out in reading order on a 1120-unit-wide canvas: `default` first, then zones in use (with ActiveGates or OneAgents), with the most ActiveGates first, then by name.
-
-- The header shows the zone name, then "fallback \<mode\>". The suffix is " (what-if)" when you picked another mode in the simulation, or " (default)" when the zone has no settings object. Then "· alt \<alternative zones\>". The fallback text is amber for None.
-- Unused zones are compact, dashed, and say "no ActiveGate or OneAgent".
-- Click a zone to focus it; click again to unfocus.
-
-**OneAgents** appear as one grey circle per zone, with the count from Q6 and the label "OneAgents". A focused zone without OneAgents shows a dashed "what-if" circle. When the zone's traffic is dropped, the circle pulses red and shows "✕ traffic dropped".
-
-**ActiveGates** are nodes laid out in a grid of up to 5 columns. Nodes with OneAgent routing come first.
-
-- The glyph is E (host-based), K (containerized), S (synthetic) or Z (zRemote).
-- Fill colour:
-  - routes OneAgent traffic (has `AGENT_ROUTING`): priority-group-1 blue;
-  - no OneAgent routing: grey at 55 % opacity;
-  - not connected: grey with a red ring;
-  - down in the simulation: dark grey with ✕.
-- A badge shows the connected OneAgent modules (Q2 `agents`, peak) when it is above 0.
-- Nodes that receive traffic have a faint outer ring.
-- Hover a node for name, type, group, zone, version, state, and connected OneAgent modules.
-- Clicking a node depends on the mode toggle:
-  - **Click: diagnose** (default): selects the ActiveGate, as Diagnose does.
-  - **Click: simulate outage**: takes it down, or brings it back.
-
-**Routing** (`routingPlan` in [activeGates.ts](../ui/app/activeGates.ts)) follows the OneAgent connectivity docs. Every zone that has OneAgents (and the focused zone) gets four priority groups:
-
-1. same zone;
-2. its alternative zones;
-3. the `default` zone ("same as group 1" for the default zone itself);
-4. every other ActiveGate.
-
-An ActiveGate belongs only to the first group that matches. An ActiveGate is *available* when it is connected, has `AGENT_ROUTING`, and is not down in the simulation. The fallback mode (or the what-if override) allows groups 1-4, 1-3 or 1-2. Traffic goes to the first allowed group with at least one available ActiveGate and is load-balanced inside it. When no allowed group has one, the traffic is **dropped**.
-
-**Traffic** is drawn as lines from the zone's OneAgents to each ActiveGate in the target group.
-
-- Colour per group: palette slots 1, 3, 7 and 2.
-- Group 1 is solid; groups 2 to 4 are dashed.
-- Inside a zone, lines are routed orthogonally; across zones they are curved.
-- Moving dots (SVG `animateMotion`): 1 + floor(load / 15) per line, at most 4, where load = the target's connected OneAgent modules. One cycle takes 1.8 s for group 1 and 2.6 s otherwise. There are no dots when the OS asks for reduced motion.
-- Hovering an ActiveGate or a zone dims the other traffic.
-
-**Controls**: Zoom out (−) and Zoom in (+) by a factor of 1.2, from 0.5× to 2.5×; **Fit**; drag the background to pan; **Reset simulation** clears the outages, what-if modes and playback (disabled when nothing is simulated). When zones are off, a notice says the map shows how traffic would be routed once they are on.
-
-**Legend**: Groups 1 to 4, Routes OneAgent traffic, No OneAgent routing, Not connected, Down (simulation), Traffic dropped, and "E host-based · K Kubernetes · S synthetic · Z zRemote · badge = connected OneAgent modules".
-
-**Side panel.**
-
-- With no zone focused, **Fallback chains** lists every zone: "N OneAgents → group G (n ActiveGates)", "traffic dropped" (red), or "No OneAgents · fallback …". It also shows "N ActiveGates down in the simulation". Click a zone to focus it.
-- With a zone focused:
-  - the zone name, its OneAgents and connected ActiveGates, and "all zones" to unfocus;
-  - a **Fallback mode** select: the configured mode ("… (configured)" or "(default)"), or "What-if: \<mode\>" for the other two modes;
-  - the mode's explanation;
-  - the four groups, each with its zones and "available of total · reason". The reasons are: not allowed by the fallback (crossed out), same as group 1, no ActiveGate, none available, traffic goes here, standby. The target group lists up to 6 ActiveGate names;
-  - a status line: "Traffic: group G, load-balanced over N ActiveGates." or "Traffic dropped: no group the fallback allows has an available ActiveGate.";
-  - **▶ Play fallback** (disabled when the traffic is already dropped). Every 2.6 s it takes the current target group's ActiveGates down, so you can watch traffic move to the next group. Captions read "Normal: traffic goes to group 1." and then "\<group\> unavailable → traffic moves to group G (…)" or "… no allowed group left: traffic dropped". **Stop playback** ends it;
-  - **Take the zone's ActiveGates down** marks every ActiveGate of the zone as down. It is disabled when the zone has none.
-
-**Routing per zone as a table** (collapsed) is the accessible alternative to the map. Columns: Zone, OneAgents, Fallback, Traffic goes to ("Group G: label", "Dropped" in red, or "— (no OneAgents)"), ActiveGates used.
-
-#### Network zones and their fallback (table)
-
-One row per zone from the zone list ("findings first"), inside the Q6 loading and error state.
-
-| Column | Meaning |
-| --- | --- |
-| Status | Blocking / Check / Info / OK (rules above) |
-| Network zone | name |
-| Fallback | Any ActiveGate / Only default zone / None (drop traffic) (bold amber), or "not read"; second line "configured" or "not configured (default)"; hover for the explanation |
-| Alternative zones | comma list or "none" |
-| ActiveGates (connected) | "connected of total: names" |
-| OneAgents | count from Q6 |
-| Finding | note |
-
-Forms below the table (collapsed):
-
-- **Set the network zone of ActiveGates (API)**: the [remote configuration form](#set-the-activegate-group-or-network-zone-remote-configuration) with *Network zone* preselected.
-- **Set the fallback and alternative zones of a network zone (API)**: shown only when the zone settings were read. See [Zone fallback](#set-a-network-zones-fallback-and-alternative-zones).
-- **Turn on network zones (API)**: shown only when zones are off and the settings were read. See [Turn on network zones](#turn-on-network-zones).
-
-QueryActions: [Q6](#q6-oneagents-per-network-zone-networkzoneagentsquery) ("ActiveGates: OneAgents per network zone").
+The network zone map, the outage simulation, the zones table and the OneAgent connections are on their own tab: [Network Zones](network-zones.md). On this tab a card **Network zones** summarises them: the number of zones and of zones with ActiveGates, "network zones are turned off for this environment" when they are off, and the zones with Blocking or Check findings. **Open the Network Zones tab** switches to that tab (`nav.openTab("networkzones")`). The zone list above still feeds the [zone check](#checks-and-scoring) of each ActiveGate's diagnosis, and the diagnosis action *Show the zone's routing on the Network Zones tab* opens the same tab.
 
 ### Module self-monitoring
 
@@ -535,7 +455,7 @@ The last section, **Remediation actions**, shows the review date line ("Guidance
   - when the zone settings were read: API · Turn on network zones (only if they are off), then API · Set a network zone's fallback and alternative zones;
   - API · Collect logs (support archive);
   - the 14 generic manual actions (with placeholders), in this order: group or zone on the ActiveGate, zone fallback, update (host-based), update (Operator), token, rejected, dropped, module, extensions, AWS, Kubernetes, resources, connectivity, agctl support archive.
-- **ActiveGate selected** (Diagnose button, matrix row or cell, Messages bar, Module self-monitoring link, or map node in diagnose mode): the description becomes "What needs attention on \<name\> …", **Clear selection** appears, and the diagnosis shows:
+- **ActiveGate selected** (Diagnose button, matrix row or cell, Messages bar, or Module self-monitoring link): the description becomes "What needs attention on \<name\> …", **Clear selection** appears, and the diagnosis shows:
   - a facts line: type, version, group, network zone, "containerized" or "\<os\> host", FIPS mode, extensions / synthetic engine / zRemote versions, token ID;
   - links: Fleet Management (app `dynatrace.fleet.management`), Deployment status (ActiveGates) (app `dynatrace.classic.deployment.status`, page `activegates`), Update setting (host-based only: the Settings app for `builtin:deployment.activegate.updates` at the ActiveGate scope), and Kubernetes cluster \<name\> (containerized only). The note "Fleet Management has no link to a single ActiveGate: search it there by name." is shown;
   - the **check list** (Blocking, Check, Info, OK), each with title and detail. See [Checks and scoring](#checks-and-scoring);
@@ -581,11 +501,11 @@ Derived statuses:
 | # | Name (function) | Runs when | Feeds |
 | --- | --- | --- | --- |
 | Q1 | Inventory (`activeGatesQuery`) | page load, timeframe change | everything; gauges, donuts, matrix, table, groups, zones, logs card |
-| Q2 | Self-monitoring per ActiveGate (`activeGateHealthQuery`) | page load, timeframe change | gauges, module states, Messages, table, map badges, checks |
+| Q2 | Self-monitoring per ActiveGate (`activeGateHealthQuery`) | page load, timeframe change | gauges, module states, Messages, table, checks |
 | Q3 | Module self-monitoring detail (`activeGateDetailQuery`) | page load, timeframe change | module problem rules, Module self-monitoring card, AI Assist |
 | Q4 | Extension configurations on ActiveGate groups (`activeGateExtensionsQuery`) | page load, timeframe change | gauge, EEC module activity, table Extensions column, groups, Extensions card |
 | Q5 | Latest extension framework warnings and errors (`activeGateExtensionEventsQuery`) | page load, timeframe change | Extensions card Reason, Extension warnings and errors |
-| Q6 | OneAgents per network zone (`networkZoneAgentsQuery`) | page load, timeframe change | zone list, map, zones table |
+| Q6 | OneAgents per network zone (`networkZoneAgentsQuery`) | page load, timeframe change | zone list, Network zones card, zone checks |
 | Q7 | Communication and resources of one ActiveGate (`activeGateTrendQuery`) | when an ActiveGate is selected; re-runs for another ActiveGate or timeframe | diagnosis line charts |
 | M1 | Messages over time (manual action variant) | not run; shown as text in the *rejected* / *dropped* manual actions | copy into a notebook |
 | M2 | Framework messages (manual action variant) | not run; shown in the *extensions* manual action | copy |
@@ -700,7 +620,7 @@ timeseries {
 - `volFree` / `volTotal`: Disk free column, disk check;
 - `sysCpu`: CPU peak column, CPU check;
 - `ingestRejected`, `otlpRejected`, `awsLost`, `awsBad`, `eecLinesRejected`, `eecLogsRejected`: module problem rules;
-- `awsRequests`, `k8sQueries`, `agents`, `beacons`, `grailAccepted`, `otlpReceived`, `synthUtil`: module activity. `agents` is also the map badge and particle load.
+- `awsRequests`, `k8sQueries`, `agents`, `beacons`, `grailAccepted`, `otlpReceived`, `synthUtil`: module activity. (The Network Zones tab reads connected OneAgent modules with its own query.)
 
 `jvmCpu`, `threadQueue`, `awsEmpty`, `awsDelay`, `k8sEvictions`, `restRequests`, `eventsIn` and `eecCpu` are read but not shown.
 
@@ -818,9 +738,9 @@ smartscapeNodes "ONEAGENT", from:now()-24h
 
 **How it works:** counts the Smartscape OneAgent nodes seen in the timeframe, per reported network zone.
 
-**Output:** a map from zone (lowercase; null → `default`) to count. It feeds the zone list, the zones table OneAgents column, the map's OneAgent circles, and zone checks.
+**Output:** a map from zone (lowercase; null → `default`) to count. It feeds the zone list, the Network zones card and the zone checks.
 
-**Open it yourself:** yes (zones table).
+**Open it yourself:** no (the Network Zones tab shows its own OneAgent queries).
 
 ### Q7 Communication and resources of one ActiveGate (`activeGateTrendQuery`)
 
@@ -966,7 +886,7 @@ Errors are shown with `fleetError`: 403 names the scope, 404 says "Not found (HT
 | extensions | Manual: Extension not running: \<first configuration not OK or unassigned\> |
 | ingest | Manual: Rejected metric or OTLP data points (only offered here, not in the generic list) |
 | group | API: Set the ActiveGate group (remote configuration), host-based only; Manual: Set the ActiveGate group or network zone on the ActiveGate |
-| zone | Manual: Show the zone's routing on the network zone map (button **Open the network zone map** scrolls to the map); API: Turn on network zones (only when off); API: Set a network zone's fallback and alternative zones; API: Set the network zone (remote configuration), host-based only; Manual: Network zone \<zone\>: alternative zones and fallback |
+| zone | Manual: Show the zone's routing on the Network Zones tab (button **Open the Network Zones tab**); API: Turn on network zones (only when off); API: Set a network zone's fallback and alternative zones; API: Set the network zone (remote configuration), host-based only; Manual: Network zone \<zone\>: alternative zones and fallback |
 
 For containerized ActiveGates, the group and zone API actions are replaced by the manual group / zone action. API actions need their data: the update settings, and the zone settings for the zone actions. When the update settings are not readable, the action shows that message instead of a form.
 
@@ -1379,7 +1299,7 @@ Recommendations:
 - The Version check's Info text says "target version could not be read" even when only the ActiveGate's own version is missing.
 - Releases behind are computed from the minor number (`/2`, rounded up). Patch versions are ignored.
 - The group and zone checks on an ActiveGate are always Info or OK, so they never highlight a table cell or raise the row status. Look at the groups and zones tables for Blocking groups and zones.
-- The zones table counts every connected ActiveGate of a zone. The map counts only connected ActiveGates with `AGENT_ROUTING`, so a zone whose only connected ActiveGate is, for example, synthetic can be OK in the table and still show dropped or rerouted traffic on the map.
+- The zone list counts every connected ActiveGate of a zone; the Network Zones tab's routing counts only connected ActiveGates with `AGENT_ROUTING`, so a zone whose only connected ActiveGate is, for example, synthetic can be OK here and still show dropped or rerouted traffic there.
 - When the zone settings cannot be read, the map treats every zone as *Any ActiveGate*.
 - The update-mode PUT writes only `updateMode` and `targetVersion`. Any other property of the existing object is not carried over.
 - The AWS stacked bars are drawn only for ActiveGates with `aws.requests` rows. Data loss for an ActiveGate without requests appears only in the module state.
@@ -1415,6 +1335,7 @@ Recommendations:
 - [Databases](databases.md): remote database extensions need an ActiveGate group with the Extensions module.
 - [Kubernetes](kubernetes.md): containerized ActiveGates and the Dynatrace Operator.
 - [OneAgents](oneagents.md): OneAgent update mode and versions.
+- [Network Zones](network-zones.md): zone map, outage simulation, zones with their ActiveGates and OneAgents, OneAgent connections.
 
 ## Source files
 
@@ -1423,7 +1344,6 @@ Recommendations:
 | [ui/app/tabs/ActiveGatesTab.tsx](../ui/app/tabs/ActiveGatesTab.tsx) | Tab layout, data hook, gauges, donuts, tables, forms, diagnosis, action list |
 | [ui/app/activeGates.ts](../ui/app/activeGates.ts) | Model: mapping, modules, versions, update settings, zones, routing, Fleet Management and classic API calls, checks, manual actions |
 | [ui/app/tabs/AgCharts.tsx](../ui/app/tabs/AgCharts.tsx) | Custom charts: module matrix, bar lists, stacked bar, line charts, status palette |
-| [ui/app/tabs/NetworkZoneMap.tsx](../ui/app/tabs/NetworkZoneMap.tsx) | Network zone map, simulation, side panel, routing table |
 | [ui/app/tabs/ModePie.tsx](../ui/app/tabs/ModePie.tsx) | `Donut` |
 | [ui/app/queries.ts](../ui/app/queries.ts) | Q1–Q7 |
 | [ui/app/analyses.ts](../ui/app/analyses.ts) | `analyzeActiveGates` (AI Assist) |

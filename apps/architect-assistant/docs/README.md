@@ -29,7 +29,7 @@ overview of the whole app, see the [app README](../README.md).
 
 ## Pages by area
 
-The app groups its 21 tabs into four areas. Only the tabs of the selected area are shown.
+The app groups its 22 tabs into four areas. Only the tabs of the selected area are shown.
 
 ### Metadata
 
@@ -64,7 +64,8 @@ What is monitored and how well.
 | OneAgents | [oneagents.md](oneagents.md) | Version spread, monitoring mode, Find hosts, monitoring mode and update fixes. |
 | Deep Monitoring | [deep-monitoring.md](deep-monitoring.md) | Processes with a OneAgent code module per technology, Find processes, Diagnose. |
 | Frontends | [frontends.md](frontends.md) | RUM v2, Session Replay on Grail, synthetic monitors, user tags, health alerts and owners per frontend. |
-| ActiveGates | [activegates.md](activegates.md) | Connectivity, versions, update mode, modules, messages, groups, network zones, extensions, logs. |
+| ActiveGates | [activegates.md](activegates.md) | Connectivity, versions, update mode, modules, messages, groups, extensions, logs. |
+| Network Zones | [network-zones.md](network-zones.md) | Zone map with outage and fallback simulation, searchable zones with their ActiveGates and OneAgents, which OneAgents are routed to which ActiveGate vs measured load. |
 | Kubernetes | [kubernetes.md](kubernetes.md) | Dynatrace Operator / DynaKube per cluster, monitoring mode and injection status per workload. |
 | Databases | [databases.md](databases.md) | Databases monitored by an extension vs database servers seen only by OneAgent. |
 | Extensions | [extensions.md](extensions.md) | Every monitoring configuration, broken ones, fastcheck log, recommendations. |

@@ -175,6 +175,10 @@
       {
         "name": "iam:groups:read",
         "comment": "Permissions Test: find groups by name (environment IAM API)"
+      },
+      {
+        "name": "fleet-management:network-zones:read",
+        "comment": "Network Zones tab: hosts that use a zone as alternative or failover (network zones hostStats)"
       }
     ],
     "functionSandbox": {}

@@ -28,6 +28,7 @@ import { ClassicOwnershipSection } from "./tabs/ClassicOwnership";
 import { DeepMonitoringTab } from "./tabs/DeepMonitoringTab";
 import { KubernetesTab } from "./tabs/KubernetesTab";
 import { ActiveGatesTab } from "./tabs/ActiveGatesTab";
+import { NetworkZonesTab } from "./tabs/NetworkZonesTab";
 import { DatabasesTab } from "./tabs/DatabasesTab";
 import { ExtensionsTab } from "./tabs/ExtensionsTab";
 import { Sdv2Tab } from "./tabs/Sdv2Tab";
@@ -76,7 +77,7 @@ export function App() {
     };
     setTimeout(() => scroll(50), 100);
   }, [openTab]);
-  const nav = useMemo<NavApi>(() => ({ goToRemediation, goToFrontends }), [goToRemediation, goToFrontends]);
+  const nav = useMemo<NavApi>(() => ({ goToRemediation, goToFrontends, openTab }), [goToRemediation, goToFrontends, openTab]);
   const aiContextValue = useMemo(() => ({ open: aiOpen, close: () => setAiOpen(false) }), [aiOpen]);
 
   const tabContent = (id: TabId): React.ReactNode => {
@@ -146,6 +147,8 @@ export function App() {
         return <FrontendsTab tf={tf} data={frontends} />;
       case "activegates":
         return <ActiveGatesTab tf={tf} />;
+      case "networkzones":
+        return <NetworkZonesTab tf={tf} />;
       case "kubernetes":
         return <KubernetesTab tf={tf} />;
       case "databases":
