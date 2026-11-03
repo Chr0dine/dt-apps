@@ -1,0 +1,18 @@
+# Gitignored files Claude Code copies into each new worktree (claude --worktree <name>).
+# Only paths that are also gitignored are copied; tracked files come from git.
+
+# Claude Code instructions, skills and agents (local only)
+CLAUDE.md
+apps/*/CLAUDE.md
+.claude/skills/
+.claude/agents/
+.claude/settings.local.json
+
+# Template the dt-app-scaffold skill copies from
+templates/golden-app/
+
+# Local secrets and tenant config, so dt-app dev/deploy work without re-auth
+.env
+.env.*
+tenants.json
+apps/*/.dt-app/.tokens.json

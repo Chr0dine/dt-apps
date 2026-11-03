@@ -1,4 +1,8 @@
 {
+  "worktree": {
+    "baseRef": "head",
+    "symlinkDirectories": ["apps/architect-assistant/node_modules"]
+  },
   "permissions": {
     "allow": [
       "Bash(npm run lint:*)",
@@ -10,11 +14,16 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(dtctl doctor:*)",
+      "Bash(dtctl query:*)",
+      "Bash(npx dt-app dev:*)"
+    ],
+    "ask": [
+      "Bash(npx dt-app deploy:*)",
+      "Bash(npm run deploy:*)"
     ],
     "deny": [
-      "Bash(npx dt-app deploy:*)",
-      "Bash(npm run deploy:*)",
       "Read(**/.dt-app/.tokens.json)"
     ]
   }
