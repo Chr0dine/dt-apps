@@ -3,9 +3,9 @@
     "version": "0.0.1",
     "description": "Architect Assistant - confirm Dynatrace onboarding best practices are in place across a tenant.",
     "scripts": {
-        "build": "dt-app build",
+        "build": "node ../../scripts/build-lock.mjs dt-app build",
         "start": "dt-app dev",
-        "deploy": "dt-app deploy",
+        "deploy": "node ../../scripts/build-lock.mjs dt-app deploy",
         "uninstall": "dt-app uninstall",
         "info": "dt-app info",
         "lint": "eslint .",
