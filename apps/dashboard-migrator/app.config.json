@@ -1,0 +1,30 @@
+{
+  "$schema": "./.dt-app/app.config.schema.json",
+  "environmentUrl": "https://chg74771.sprint.apps.dynatracelabs.com",
+  "app": {
+    "name": "Dashboard Migrator",
+    "version": "0.1.1",
+    "description": "Translate classic dashboards and their queries into DQL and new dashboards.",
+    "id": "my.dashboard.migrator",
+    "icon": "./assets/icon.png",
+    "scopes": [
+      { "name": "storage:metrics:read", "comment": "Translate: check that translated metric keys exist (metrics command) and preview timeseries queries" },
+      { "name": "storage:entities:read", "comment": "Translate: classicEntitySelector() filters, entityName() and entity tile previews" },
+      { "name": "storage:smartscape:read", "comment": "Translate: preview queries that read smartscape nodes" },
+      { "name": "storage:user.sessions:read", "comment": "Translate: preview USQL tiles translated to user.sessions" },
+      { "name": "storage:user.events:read", "comment": "Translate: preview USQL useraction tiles translated to user.events" },
+      { "name": "storage:logs:read", "comment": "Translate: preview log tiles translated to fetch logs" },
+      { "name": "storage:events:read", "comment": "Translate: preview problem and event tiles" },
+      { "name": "storage:bizevents:read", "comment": "Translate: preview business event tiles" },
+      { "name": "storage:spans:read", "comment": "Translate: preview span-based tiles" },
+      { "name": "storage:buckets:read", "comment": "Translate: read the Grail buckets behind logs, events and problems (dt.davis.problems)" },
+      { "name": "document:documents:read", "comment": "Export: list dashboards this app created earlier" },
+      { "name": "document:documents:write", "comment": "Export: create the new dashboard document" },
+      { "name": "app-settings:objects:read", "comment": "Classic source: the classic-dashboards function reads the ReadConfig API token from the app settings (plain text only inside the function)" },
+      { "name": "app-settings:objects:write", "comment": "Classic source: admins store the ReadConfig API token in the app settings; also checked to decide who may change it" },
+      { "name": "state:user-app-states:read", "comment": "read the last imported dashboard and user settings" },
+      { "name": "state:user-app-states:write", "comment": "save the last imported dashboard and user settings" }
+    ],
+    "functionSandbox": {}
+  }
+}
