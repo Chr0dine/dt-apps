@@ -8,7 +8,7 @@ const plural = (n: number, s: string) => `${n} ${s}${n === 1 ? "" : "s"}`;
 export function analyzeImport(source: SourceInfo | null, tokenSet: boolean | null): AIInsightsData {
   if (!source) {
     const recommendations: RecommendationItem[] = [
-      { impact: "high", text: "Open the classic dashboard, choose Edit > Settings > Dashboard JSON (or GET /api/config/v1/dashboards/{id}), copy the JSON and paste it here." },
+      { impact: "high", text: "Open the classic dashboard, select Edit, open the Settings tab, select Configure more > Dashboard JSON (or call GET /api/config/v1/dashboards/{id}), copy or download the JSON and paste it here." },
       { impact: "medium", text: "Use Load sample to see how each classic tile type is translated before migrating your own dashboards." },
     ];
     if (tokenSet === false) recommendations.push({ impact: "low", text: "Ask an admin to store a ReadConfig API token so classic dashboards can be listed and loaded straight from this environment." });

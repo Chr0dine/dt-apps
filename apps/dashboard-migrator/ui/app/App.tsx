@@ -8,6 +8,7 @@ import { MigrationProvider, useMigration } from "./MigrationContext";
 import { AIInsightsContext } from "./components/AIInsights";
 import { HelpModal } from "./components/HelpModal";
 import { ConfidenceBadge } from "./components/layout";
+import { TabDocsLink, TabRefLinks } from "./components/DocLinks";
 import { ImportTab } from "./tabs/ImportTab";
 import { TranslateTab } from "./tabs/TranslateTab";
 import { ExportTab } from "./tabs/ExportTab";
@@ -94,13 +95,19 @@ const AppInner: React.FC = () => {
       <div style={{ padding: "0 8px" }}>
         <Tabs selectedIndex={tab} onChange={(i: unknown) => setTab(Number(i) || 0)}>
           <Tab title="Import">
+            <TabDocsLink tab="Import" />
             <ImportTab onLoaded={() => go("Translate")} />
+            <TabRefLinks tab="Import" />
           </Tab>
           <Tab title="Translate">
+            <TabDocsLink tab="Translate" />
             <TranslateTab onGoImport={() => go("Import")} onGoExport={() => go("Export")} />
+            <TabRefLinks tab="Translate" />
           </Tab>
           <Tab title="Export">
+            <TabDocsLink tab="Export" />
             <ExportTab onGoImport={() => go("Import")} />
+            <TabRefLinks tab="Export" />
           </Tab>
         </Tabs>
       </div>

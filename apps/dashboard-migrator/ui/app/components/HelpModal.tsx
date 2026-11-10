@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
+import { DOCS_BASE_URL, DOCS_INDEX_URL, REF, TAB_DOCS, TRANSLATION_REFERENCE_URL } from "../links";
 
 interface HelpSection {
   id: string;
@@ -26,6 +27,8 @@ const CODE: React.CSSProperties = {
   background: "rgba(69,137,255,0.12)", border: "1px solid rgba(69,137,255,0.2)",
   borderRadius: 3, padding: "1px 5px", fontSize: 11.5, fontFamily: "monospace", color: "#a8d1ff",
 };
+
+const A: React.CSSProperties = { color: "#7ab4ff", textDecoration: "none" };
 
 const S = ({ children }: { children: React.ReactNode }) => <strong style={{ color: "#fff" }}>{children}</strong>;
 const C = ({ children }: { children: React.ReactNode }) => <code style={CODE}>{children}</code>;
@@ -58,7 +61,7 @@ const SECTIONS: HelpSection[] = [
       <div style={SECTION_STYLE}>
         <p style={H3}>Paste or upload</p>
         <p style={P}>
-          Copy the classic dashboard JSON (dashboard menu &gt; Settings &gt; Advanced settings &gt; Dashboard JSON) or the response of <C>GET /api/config/v1/dashboards/&#123;id&#125;</C>, paste it and select <S>Translate</S>. <S>Load sample</S> loads a dashboard that covers every supported tile type.
+          Copy the classic dashboard JSON (open the dashboard, select <S>Edit</S>, switch to the <S>Settings</S> tab, select <S>Configure more</S> (dashboard menu &gt; Settings &gt; Advanced settings &gt; Dashboard JSON)gt; <S>Dashboard JSON</S>, then copy or download it) or the response of <C>GET /api/config/v1/dashboards/&#123;id&#125;</C>, paste it and select <S>Translate</S>. <S>Load sample</S> loads a dashboard that covers every supported tile type.
         </p>
         <p style={H3}>From this environment</p>
         <p style={P}>
@@ -141,6 +144,29 @@ const SECTIONS: HelpSection[] = [
       </div>
     ),
   },
+  {
+    id: "docs",
+    icon: "📚",
+    title: "Documentation and references",
+    content: (
+      <div style={SECTION_STYLE}>
+        <p style={H3}>This app</p>
+        <ul style={UL}>
+          <li><a style={A} href={DOCS_INDEX_URL} target="_blank" rel="noreferrer">Dashboard Migrator documentation</a> (overview, setup, scopes)</li>
+          {(Object.keys(TAB_DOCS) as (keyof typeof TAB_DOCS)[]).map((t) => (
+            <li key={t}><a style={A} href={DOCS_BASE_URL + TAB_DOCS[t]} target="_blank" rel="noreferrer">{t} tab</a></li>
+          ))}
+          <li><a style={A} href={TRANSLATION_REFERENCE_URL} target="_blank" rel="noreferrer">Translation reference</a> (every metric key, USQL field and tile type mapping)</li>
+        </ul>
+        <p style={H3}>Dynatrace documentation</p>
+        <ul style={UL}>
+          {Object.values(REF).map((l) => (
+            <li key={l.url}><a style={A} href={l.url} target="_blank" rel="noreferrer">{l.title}</a></li>
+          ))}
+        </ul>
+      </div>
+    ),
+  },
 ];
 
 export function HelpModal({ onClose }: { onClose: () => void }) {
@@ -157,6 +183,15 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
             <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Translate classic dashboards and their queries into DQL and new dashboards</p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <a
+              href={DOCS_INDEX_URL}
+              target="_blank"
+              rel="noreferrer"
+              title="Open the Dashboard Migrator documentation on GitHub"
+              style={{ background: "rgba(69,137,255,0.12)", border: "1px solid rgba(69,137,255,0.3)", borderRadius: 8, color: "#7ab4ff", fontSize: 13, padding: "8px 14px", cursor: "pointer", textDecoration: "none", fontWeight: 600 }}
+            >
+              📄 Documentation
+            </a>
             <button onClick={onClose} style={{ background: "rgba(128,128,128,0.15)", border: "1px solid rgba(128,128,128,0.25)", borderRadius: 8, color: "rgba(255,255,255,0.7)", fontSize: 13, padding: "8px 16px", cursor: "pointer" }}>
               Close
             </button>

@@ -10,6 +10,18 @@ A Dynatrace AppEngine app that translates **classic dashboards** and their class
 
 **AI Assist** (header) gives a per-tab summary, insights and recommendations: what the classic dashboard contains, which queries fail verification or read unknown metrics, and what to fix before exporting.
 
+## Documentation
+
+| Page | Covers |
+| --- | --- |
+| [Overview](docs/README.md) | The three steps, confidence levels, scopes, credentials, AI Assist, query access, data sources, limitations, Dynatrace documentation links. |
+| [Import](docs/import.md) | Paste / upload / sample / load from the environment, the ReadConfig token, accepted JSON, API calls, messages. |
+| [Translate](docs/translate.md) | Tile cards, verification, previews, editing, every note and what to do about it. |
+| [Export](docs/export.md) | The dashboard document, layout scaling, what to do after the export. |
+| [Translation reference](docs/translation-reference.md) | Every mapping: tile types, visualizations, metric keys, selector transformations, USQL, logs, built-in tiles, timeframes, management zones. |
+
+In the app, every tab links to its page (top right) and lists the relevant Dynatrace documentation at the bottom; the help dialog (**?**) links to all of them.
+
 ## What is translated
 
 | Classic tile | DQL |

@@ -109,7 +109,7 @@ export const ImportTab: React.FC<{ onLoaded: () => void }> = ({ onLoaded }) => {
       {panel}
       <SectionCard
         title="Paste or upload a classic dashboard"
-        subtitle="The classic dashboard JSON: dashboard menu > Settings > Advanced settings > Dashboard JSON, or GET /api/config/v1/dashboards/{id}. Nothing is sent anywhere until you create the new dashboard."
+        subtitle="The classic dashboard JSON: open the dashboard, Edit > Settings tab > Configure more > Dashboard JSON, or GET /api/config/v1/dashboards/{id}. Nothing is sent anywhere until you create the new dashboard."
       >
         <Flex flexDirection="column" gap={8}>
           <TextArea value={text} onChange={(v: string) => setText(v)} aria-label="Classic dashboard JSON" placeholder='{ "dashboardMetadata": { "name": "..." }, "tiles": [ ... ] }' rows={9} resize="vertical" style={{ fontFamily: "monospace", fontSize: 12 }} />
