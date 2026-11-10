@@ -40,6 +40,7 @@ import {
 import { useIamDrafts } from "../iamDrafts";
 import { useAppCatalog } from "../iamApps";
 import type { Timeframe } from "../queries";
+import { PublishCard } from "./PublishCard";
 import { AddSelect, CatalogBanner, ConditionRow, DocLink, EditorPane, OperatorSelect, ValuePicker, card, code, codeWrap, fileNameFor, hint, plural, valuesFor, type AddGroup } from "./IamShared";
 import { LoadNote } from "./IamPolicyTab";
 
@@ -148,6 +149,7 @@ export function IamBoundaryTab({ tf }: { tf: Timeframe }) {
               loadNote={loadNote && <LoadNote note={loadNote} onClose={() => setLoadNote(null)} />}
               docs={[IAM_DOCS.boundaries, IAM_DOCS.reference, IAM_DOCS.globals, IAM_DOCS.templating, IAM_DOCS.defaults, IAM_DOCS.limits, { title: "Account Management", url: ACCOUNT_MANAGEMENT_URL }]}
             />
+            <PublishCard kind="boundary" name={b.name} text={text} errors={check.diagnostics.filter((x) => x.severity === "error").length} />
           </div>
         </div>
       </div>

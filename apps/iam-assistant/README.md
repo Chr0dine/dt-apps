@@ -5,8 +5,8 @@ A Dynatrace AppEngine app for users and permissions, split out of Architect Assi
 | Tab | What it does | Docs |
 |---|---|---|
 | **Overview** (default) | SAML vs local (and SCIM) groups in the account and the users under each, as donuts, bars and a group list. | [overview.md](docs/overview.md) |
-| **IAM Policy Creator** | Build an IAM policy from apps, dimensional data and permissions, with live validation against the IAM policy reference. | [iam-policy-creator.md](docs/iam-policy-creator.md) |
-| **IAM Boundary Creator** | Build a policy boundary and preview its effect on a policy. | [iam-boundary-creator.md](docs/iam-boundary-creator.md) |
+| **IAM Policy Creator** | Build an IAM policy from apps, dimensional data and permissions, with live validation against the IAM policy reference, and (admins) create it in Account Management. | [iam-policy-creator.md](docs/iam-policy-creator.md) |
+| **IAM Boundary Creator** | Build a policy boundary, preview its effect on a policy, and (admins) create it in Account Management. | [iam-boundary-creator.md](docs/iam-boundary-creator.md) |
 | **Permissions Test** | Pick a user or group (or the draft policy) and see which apps they can open and which Grail data they can read. | [permissions-test.md](docs/permissions-test.md) |
 
 Every tab has an **AI Assist** panel (header button) that explains what is on screen.

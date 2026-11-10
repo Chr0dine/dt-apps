@@ -3,7 +3,7 @@
   "environmentUrl": "https://chg74771.sprint.apps.dynatracelabs.com",
   "app": {
     "name": "IAM Assistant",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "Overview of IAM groups and users; build and test IAM policies and boundaries.",
     "id": "my.iam.assistant",
     "icon": "./assets/icon.png",

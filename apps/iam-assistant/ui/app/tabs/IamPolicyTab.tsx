@@ -53,6 +53,7 @@ import {
 import { BUCKETS, LEVEL_HINT, LEVEL_LABEL, useAppCatalog, useAppIcon, type AppCatalog, type AppLevel, type AppPerm, type AppSummary } from "../iamApps";
 import { useIamDrafts } from "../iamDrafts";
 import type { Timeframe } from "../queries";
+import { PublishCard } from "./PublishCard";
 import { AddSelect, CatalogBanner, ConditionRow, DocLink, EditorPane, OperatorSelect, ValuePicker, card, code, codeWrap, fileNameFor, hint, plural, valuesFor, type AddGroup } from "./IamShared";
 
 // ---------------------------------------------------------------------------
@@ -174,6 +175,7 @@ export function IamPolicyTab({ tf }: { tf: Timeframe }) {
                 { title: "Account Management", url: ACCOUNT_MANAGEMENT_URL },
               ]}
             />
+            <PublishCard kind="policy" name={d.name} text={text} errors={check.diagnostics.filter((x) => x.severity === "error").length} />
           </div>
         </div>
       </div>
