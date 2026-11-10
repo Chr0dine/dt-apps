@@ -81,7 +81,7 @@ export function OverviewTab() {
         </Button>
       </Flex>
 
-      {(needsSetup || setup?.state === "missing") && <SetupCard setup={setup} onSaved={refresh} />}
+      {(needsSetup || setup?.state === "missing") && <SetupCard setup={setup} onSaved={refresh} needsIam={false} />}
 
       {load.status === "loading" && (
         <Flex gap={8} alignItems="center">
@@ -125,7 +125,7 @@ export function OverviewTab() {
             <details>
               <summary style={{ cursor: "pointer", fontSize: 12, opacity: 0.8 }}>Account Management access</summary>
               <div style={{ marginTop: Spacings.Size8 }}>
-                <SetupCard setup={setup} onSaved={refresh} />
+                <SetupCard setup={setup} onSaved={refresh} needsIam={false} />
               </div>
             </details>
           )}

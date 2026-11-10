@@ -137,7 +137,7 @@ function AccountForm({ status, onDone }: { status: CredentialStatus; onDone: (r:
       <ol style={{ margin: "0 0 8px", paddingLeft: 18, fontSize: 12, lineHeight: "18px" }}>
         <li>
           In <DocLink href={ACCOUNT_MANAGEMENT_URL}>Account Management</DocLink> &gt; Identity &amp; access management &gt; OAuth clients, create a client with {scopeList(ACCOUNT_SCOPES)}
-          (read-only). The page also shows the account UUID.
+          (read-only; account-idm-read alone is enough for the Overview, the iam:* scopes are for the Permissions Test). The page also shows the account UUID.
         </li>
         <li>
           Allow {scopeList(["sso.dynatrace.com", "api.dynatrace.com"])}in the {outbound ? <DocLink href={outbound}>allowed outbound connections</DocLink> : "allowed outbound connections"} if that

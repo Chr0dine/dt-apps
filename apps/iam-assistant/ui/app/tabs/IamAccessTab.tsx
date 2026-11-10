@@ -317,8 +317,11 @@ const hitStyle: React.CSSProperties = {
 
 // --- Setup -------------------------------------------------------------------------------------------------------------
 /** The account OAuth client lives in the app settings (AppCredentialsCard); below it, whether the function can use it. */
-export function SetupCard({ setup, onSaved }: { setup: SetupStatus | null; onSaved: () => void }) {
+export function SetupCard({ setup, onSaved, needsIam = true }: { setup: SetupStatus | null; onSaved: () => void; needsIam?: boolean }) {
   const outbound = settingsLink(OUTBOUND_SCHEMA);
+  // A client with only account-idm-read is enough for the Overview but not for the Permissions Test.
+  const scopes = setup?.state === "ok" ? setup.scopes.split(/\s+/) : [];
+  const iamMissing = setup?.state === "ok" && !scopes.includes("iam-policies-management") && ["iam:bindings:read", "iam:policies:read", "iam:boundaries:read"].some((s) => !scopes.includes(s));
   return (
     <Flex flexDirection="column" gap={8}>
       <AppCredentialsCard use="account" onChanged={onSaved} />
@@ -327,6 +330,16 @@ export function SetupCard({ setup, onSaved }: { setup: SetupStatus | null; onSav
           The function reaches the Account Management API with <span style={code}>{setup.scopes}</span>
           {setup.source === "credential-vault" ? " (credential vault entry of an earlier version)" : ""}.
         </Text>
+      )}
+      {needsIam && iamMissing && (
+        <MessageContainer variant="warning">
+          <MessageContainer.Description>
+            <span>
+              The stored OAuth client is enough for the Overview, but testing a user or group also needs <span style={code}>iam:bindings:read</span>,{" "}
+              <span style={code}>iam:policies:read</span> and <span style={code}>iam:boundaries:read</span>. Add them to the client in Account Management.
+            </span>
+          </MessageContainer.Description>
+        </MessageContainer>
       )}
       {setup?.state === "failing" && (
         <MessageContainer variant="warning">

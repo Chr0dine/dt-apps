@@ -102,6 +102,7 @@ const tokenCache = new Map<string, { token: string; scopes: string; until: numbe
 /** Bearer token for api.dynatrace.com: tries each scope set in order, moving on only on invalid_scope. */
 export async function accountToken(c: AccountClient, scopeSets: string[]): Promise<{ token: string; scopes: string }> {
   let last = "";
+  let code = "";
   for (const scope of scopeSets) {
     const key = `${c.clientId}|${c.accountUuid}|${scope}`;
     const hit = tokenCache.get(key);
@@ -115,9 +116,27 @@ export async function accountToken(c: AccountClient, scopeSets: string[]): Promi
       return entry;
     }
     last = `${res.status} ${json.error ?? ""} ${json.error_description ?? ""}`.trim();
-    if (json.error !== "invalid_scope") break;
+    code = json.error ?? "";
+    if (code !== "invalid_scope") break;
   }
-  throw new ApiError(`The OAuth token request was rejected (${last}). Check the client ID, secret, account UUID and the client's scopes.`, 401);
+  throw new ApiError(`The OAuth token request was rejected (${last}). ${tokenHint(code, c.accountUuid, scopeSets)}`, 401);
+}
+
+/** What a token error from sso.dynatrace.com usually means (it answers most of them with HTTP 400). */
+function tokenHint(code: string, accountUuid: string, scopeSets: string[]): string {
+  switch (code) {
+    case "invalid_scope":
+      return `The OAuth client has none of the scope sets this needs: ${scopeSets.map((s) => `"${s}"`).join(" or ")}. Add the missing scopes to the client in Account Management > Identity & access management > OAuth clients.`;
+    case "invalid_client":
+    case "unauthorized_client":
+      return "The client ID or secret is wrong, or the client was deleted. Save the client again (the secret is shown only once, when the client is created).";
+    case "invalid_request":
+    case "invalid_target":
+    case "invalid_resource":
+      return `Check the account UUID (${accountUuid}): the token is requested for urn:dtaccount:${accountUuid}, and the OAuth client must belong to that account.`;
+    default:
+      return "Check the client ID, secret, account UUID and the client's scopes.";
+  }
 }
 
 /** OAuth client from the app settings, if complete. */

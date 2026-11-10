@@ -103,8 +103,17 @@ export function useAppCatalog(ix: CatalogIndex): AppCatalog {
 }
 
 // --- Icons -------------------------------------------------------------------------------------------------------------
-// The registry serves each icon (PNG) under /platform/app-engine/registry/v1/app-icons/<id>. They are read through the
-// SDK HTTP client (the app's session), a few at a time, and kept as object URLs for the page load.
+// The registry serves each icon (PNG or SVG) under /platform/app-engine/registry/v1/app-icons/<id>. They are read
+// through the SDK HTTP client (the app's session), a few at a time, and kept as data: URLs for the page load. Not object
+// URLs: the default app CSP allows img-src data: and 'self' but not blob:, so blob: icons were blocked and every card
+// showed its initial.
+const toDataUrl = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(blob);
+  });
 const icons = new Map<string, Promise<string | null>>();
 const queue: (() => void)[] = [];
 let running = 0;
@@ -124,8 +133,18 @@ export function loadAppIcon(app: InstalledApp): Promise<string | null> {
         httpClient
           .send({ url: app.icon!, method: "GET" })
           .then((res) => res.body("blob"))
-          .then((blob) => resolve(URL.createObjectURL(blob as Blob)))
-          .catch(() => resolve(null))
+          .then(async (b) => {
+            const blob = b as Blob;
+            if (blob.type.startsWith("image/")) return toDataUrl(blob);
+            // No image content type: SVG icons start with "<svg" or "<?xml"; anything else is treated as PNG.
+            const head = (await blob.slice(0, 256).text()).trimStart();
+            return toDataUrl(new Blob([blob], { type: /^<(\?xml|svg)/i.test(head) ? "image/svg+xml" : "image/png" }));
+          })
+          .then(resolve)
+          .catch((e) => {
+            console.warn(`App icon of ${app.id} could not be loaded`, e);
+            resolve(null);
+          })
           .finally(() => {
             running--;
             next();

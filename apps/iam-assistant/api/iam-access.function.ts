@@ -18,6 +18,8 @@ import { ApiError, accountClient, accountToken, callerCanManage, readAppCredenti
 const API = "https://api.dynatrace.com";
 /** Read-only scopes first; clients created before the fine-grained IAM scopes have iam-policies-management instead. */
 const SCOPE_SETS = ["account-idm-read iam:bindings:read iam:policies:read iam:boundaries:read", "account-idm-read iam-policies-management"];
+/** Overview, search and status only read users and groups: a client with just account-idm-read is enough for them. */
+const IDM_SCOPE_SETS = [...SCOPE_SETS, "account-idm-read"];
 const CONCURRENCY = 6;
 const MAX_SEARCH = 50;
 
@@ -105,7 +107,9 @@ export default async function (payload: Payload): Promise<IamAccessResult> {
     // The test reads the account's IAM setup: only the app's admins may run it unless an admin allowed it for every user.
     if (!creds.forAllUsers && !(await callerCanManage()))
       return { status: "forbidden", message: "Only users who can change this app's settings can read the account's groups and run the Permissions Test here. An admin can allow it for every user under Account Management access." };
-    const { token: t, scopes } = await accountToken(creds, SCOPE_SETS);
+    // Permissions Test (resolve) needs the IAM read scopes; everything else only reads users and groups.
+    const needsIam = payload.action === undefined || payload.action === "resolve";
+    const { token: t, scopes } = await accountToken(creds, needsIam ? SCOPE_SETS : IDM_SCOPE_SETS);
     const acc = encodeURIComponent(creds.accountUuid);
 
     if (payload.action === "status") return { status: "ok-status", accountUuid: creds.accountUuid, scopes, owner: creds.owner, ownerAccessOnly: creds.ownerAccessOnly, source: creds.source, forAllUsers: creds.forAllUsers };
