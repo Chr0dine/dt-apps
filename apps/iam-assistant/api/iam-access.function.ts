@@ -183,59 +183,88 @@ export default async function (payload: Payload): Promise<IamAccessResult> {
     }
     const groupIds = new Set(groups.map((g) => g.uuid));
 
-    // 2. Bindings on the account (all environments) and on this environment that name one of those groups.
-    const levels: { levelType: "account" | "environment"; levelId: string }[] = [
-      { levelType: "account", levelId: creds.accountUuid },
-      { levelType: "environment", levelId: env },
-    ];
-    const bindings: Binding[] = [];
-    for (const l of levels) {
-      try {
-        const r = await get<LevelBindings>(t, `/iam/v1/repo/${l.levelType}/${encodeURIComponent(l.levelId)}/bindings`);
-        for (const b of r.policyBindings ?? [])
-          for (const g of b.groups ?? [])
-            if (groupIds.has(g)) bindings.push({ ...l, policyUuid: b.policyUuid, groups: [g], boundaries: b.boundaries ?? [], parameters: b.parameters ?? {} });
-      } catch (e) {
-        if (e instanceof ApiError && e.status === 404 && l.levelType === "environment") warnings.push(`Environment ${env} was not found in account ${creds.accountUuid}; only account-level bindings are shown.`);
-        else throw e;
-      }
-    }
-
-    // 3. The bound policies, wherever they are defined (global = Dynatrace default policies, account, environment).
-    const overview = await get<{ policyOverviewList?: { uuid: string; name: string; description?: string; levelType: string; levelId: string }[] }>(
-      t,
-      `/iam/v1/repo/environment/${encodeURIComponent(env)}/policies/aggregate`,
-    ).catch(() => get<{ policyOverviewList?: { uuid: string; name: string; description?: string; levelType: string; levelId: string }[] }>(t, `/iam/v1/repo/account/${acc}/policies/aggregate`));
-    const where = new Map((overview.policyOverviewList ?? []).map((p) => [p.uuid, p]));
-    const policyIds = [...new Set(bindings.map((b) => b.policyUuid))];
-    const policies: Record<string, Policy> = {};
-    await pool(policyIds, async (id) => {
-      const o = where.get(id);
-      const candidates = o ? [{ levelType: o.levelType, levelId: o.levelId }] : [{ levelType: "global", levelId: "global" }, ...levels];
-      for (const c of candidates) {
+    // Steps 2-4 read the IAM policy service. Some deployments (seen on a sprint stack) answer 403 "User not authorized."
+    // to a token with the fine-grained iam:*:read scopes although it was granted; the legacy iam-policies-management scope
+    // is then accepted. So on a 403 the policy reads are repeated once with a token for the legacy scope set.
+    const readPolicies = async (t: string) => {
+      const warnings: string[] = [];
+      // 2. Bindings on the account (all environments) and on this environment that name one of those groups.
+      const levels: { levelType: "account" | "environment"; levelId: string }[] = [
+        { levelType: "account", levelId: creds.accountUuid },
+        { levelType: "environment", levelId: env },
+      ];
+      const bindings: Binding[] = [];
+      for (const l of levels) {
         try {
-          const p = await get<{ uuid: string; name: string; description?: string; statementQuery?: string }>(t, `/iam/v1/repo/${c.levelType}/${encodeURIComponent(c.levelId)}/policies/${encodeURIComponent(id)}`);
-          policies[id] = { uuid: id, name: p.name, description: p.description, levelType: c.levelType, levelId: c.levelId, statementQuery: p.statementQuery ?? "" };
-          return;
+          const r = await get<LevelBindings>(t, `/iam/v1/repo/${l.levelType}/${encodeURIComponent(l.levelId)}/bindings`);
+          for (const b of r.policyBindings ?? [])
+            for (const g of b.groups ?? [])
+              if (groupIds.has(g)) bindings.push({ ...l, policyUuid: b.policyUuid, groups: [g], boundaries: b.boundaries ?? [], parameters: b.parameters ?? {} });
         } catch (e) {
-          if (!(e instanceof ApiError && e.status === 404)) throw e;
+          if (e instanceof ApiError && e.status === 404 && l.levelType === "environment") warnings.push(`Environment ${env} was not found in account ${creds.accountUuid}; only account-level bindings are shown.`);
+          else throw e;
         }
       }
-      warnings.push(`Policy ${id} is bound but could not be read at any level.`);
-    });
 
-    // 4. Boundaries used by those bindings (boundaries live on the account).
-    const boundaryIds = [...new Set(bindings.flatMap((b) => b.boundaries))];
-    const boundaries: Record<string, Boundary> = {};
-    await pool(boundaryIds, async (id) => {
+      // 3. The bound policies, wherever they are defined (global = Dynatrace default policies, account, environment).
+      const overview = await get<{ policyOverviewList?: { uuid: string; name: string; description?: string; levelType: string; levelId: string }[] }>(
+        t,
+        `/iam/v1/repo/environment/${encodeURIComponent(env)}/policies/aggregate`,
+      ).catch(() => get<{ policyOverviewList?: { uuid: string; name: string; description?: string; levelType: string; levelId: string }[] }>(t, `/iam/v1/repo/account/${acc}/policies/aggregate`));
+      const where = new Map((overview.policyOverviewList ?? []).map((p) => [p.uuid, p]));
+      const policyIds = [...new Set(bindings.map((b) => b.policyUuid))];
+      const policies: Record<string, Policy> = {};
+      await pool(policyIds, async (id) => {
+        const o = where.get(id);
+        const candidates = o ? [{ levelType: o.levelType, levelId: o.levelId }] : [{ levelType: "global", levelId: "global" }, ...levels];
+        for (const c of candidates) {
+          try {
+            const p = await get<{ uuid: string; name: string; description?: string; statementQuery?: string }>(t, `/iam/v1/repo/${c.levelType}/${encodeURIComponent(c.levelId)}/policies/${encodeURIComponent(id)}`);
+            policies[id] = { uuid: id, name: p.name, description: p.description, levelType: c.levelType, levelId: c.levelId, statementQuery: p.statementQuery ?? "" };
+            return;
+          } catch (e) {
+            if (!(e instanceof ApiError && e.status === 404)) throw e;
+          }
+        }
+        warnings.push(`Policy ${id} is bound but could not be read at any level.`);
+      });
+
+      // 4. Boundaries used by those bindings (boundaries live on the account).
+      const boundaryIds = [...new Set(bindings.flatMap((b) => b.boundaries))];
+      const boundaries: Record<string, Boundary> = {};
+      await pool(boundaryIds, async (id) => {
+        try {
+          const b = await get<{ uuid: string; name: string; boundaryQuery?: string }>(t, `/iam/v1/repo/account/${acc}/boundaries/${encodeURIComponent(id)}`);
+          boundaries[id] = { uuid: id, name: b.name, boundaryQuery: b.boundaryQuery ?? "" };
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 404) warnings.push(`Boundary ${id} is used in a binding but could not be read.`);
+          else throw e;
+        }
+      });
+
+      return { bindings, policies, boundaries, warnings };
+    };
+    let iam: Awaited<ReturnType<typeof readPolicies>>;
+    try {
+      iam = await readPolicies(t);
+    } catch (e) {
+      if (!(e instanceof ApiError && e.status === 403) || scopes.split(/\s+/).includes("iam-policies-management")) throw e;
+      let legacy: string;
       try {
-        const b = await get<{ uuid: string; name: string; boundaryQuery?: string }>(t, `/iam/v1/repo/account/${acc}/boundaries/${encodeURIComponent(id)}`);
-        boundaries[id] = { uuid: id, name: b.name, boundaryQuery: b.boundaryQuery ?? "" };
-      } catch (e) {
-        if (e instanceof ApiError && e.status === 404) warnings.push(`Boundary ${id} is used in a binding but could not be read.`);
-        else throw e;
+        legacy = (await accountToken(creds, [SCOPE_SETS[1]])).token;
+      } catch {
+        throw e; // the client has no iam-policies-management: keep the original 403
       }
-    });
+      try {
+        iam = await readPolicies(legacy);
+      } catch (e2) {
+        if (e2 instanceof ApiError && e2.status === 403)
+          throw new ApiError(`${e2.message} Both the iam:*:read scopes and iam-policies-management were refused, so the scopes are not the problem: the OAuth client (or the user it acts for) lacks permission to read this account's policies and bindings. Check that the client was created by, or for, an account admin.`, 403);
+        throw e2;
+      }
+    }
+    warnings.push(...iam.warnings);
+    const { bindings, policies, boundaries } = iam;
 
     return { status: "ok", checkedAt: new Date().toISOString(), accountUuid: creds.accountUuid, subject, groups, bindings, policies, boundaries, warnings };
   } catch (e) {

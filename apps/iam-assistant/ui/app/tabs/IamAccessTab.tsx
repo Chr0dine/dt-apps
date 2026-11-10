@@ -379,7 +379,7 @@ function FailureMessage({ failure, label, onRetry }: { failure: Failure; label: 
         <span>
           {failure.message}
           {/[.!?]$/.test(failure.message.trim()) ? "" : "."}
-          {failure.status === "unauthorized" && " The OAuth client needs account-idm-read plus iam:bindings:read, iam:policies:read and iam:boundaries:read (or iam-policies-management)."}{" "}
+          {failure.status === "unauthorized" && !failure.message.includes("scopes are not the problem") && " The OAuth client needs account-idm-read plus iam:bindings:read, iam:policies:read and iam:boundaries:read (or iam-policies-management)."}{" "}
           <button type="button" onClick={onRetry} style={textButton}>
             Retry
           </button>
