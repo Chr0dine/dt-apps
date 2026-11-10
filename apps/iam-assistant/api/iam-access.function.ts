@@ -1,21 +1,20 @@
-import { ApiError, accountClient, accountToken, callerCanManage, readAppCredentials, type AccountClient } from "./app-credentials";
+import { ApiError, accountClient, accountStack, accountToken, callerCanManage, readAppCredentials, type AccountClient } from "./app-credentials";
 
 // Policies that apply to a user or a group (Permissions Test tab) and the account's groups and members (Overview tab). Group membership, policy bindings, policies and
-// boundaries are only exposed by the account-level Account Management API (https://api.dynatrace.com), which takes an
+// boundaries are only exposed by the account-level Account Management API (api.dynatrace.com; sprint/dev stacks: see accountStack), which takes an
 // OAuth client of the account; the environment's /platform/iam/v1 API only finds users and groups by name. The browser
 // cannot call it (no CORS, no account token), hence this function.
 // Setup: create an OAuth client in Account Management (Identity & access management > OAuth clients) with
 // account-idm-read and either iam:bindings:read + iam:policies:read + iam:boundaries:read or iam-policies-management. An
 // admin of this app stores it in the app settings (app-credentials.ts: secrets readable only by this app's functions);
 // unless the admin allows it for every user, only the app's admins can run the test or read the overview.
-// sso.dynatrace.com and api.dynatrace.com must be in builtin:dt-javascript-runtime.allowed-outbound-connections when
+// The stack's SSO and API hosts (sso.dynatrace.com, api.dynatrace.com on production) must be in builtin:dt-javascript-runtime.allowed-outbound-connections when
 // that allowlist is enforced.
 // Calls per test: 1 token (cached for its lifetime), 1 user (or nothing for a group), 2 binding lists (account and this
 // environment), 1 policy overview (policies/aggregate, inherited levels included), 1 GET per bound policy and per
 // boundary, 6 at a time.
 // Calls per overview: 1 group list, 1 user list, then 1 member list per group, 6 at a time.
 
-const API = "https://api.dynatrace.com";
 /** Read-only scopes first; clients created before the fine-grained IAM scopes have iam-policies-management instead. */
 const SCOPE_SETS = ["account-idm-read iam:bindings:read iam:policies:read iam:boundaries:read", "account-idm-read iam-policies-management"];
 /** Overview, search and status only read users and groups: a client with just account-idm-read is enough for them. */
@@ -68,7 +67,7 @@ async function readCredential(): Promise<Creds | { error: string }> {
 }
 
 async function get<T>(t: string, path: string): Promise<T> {
-  const res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${t}`, Accept: "application/json" } });
+  const res = await fetch(`${accountStack().api}${path}`, { headers: { Authorization: `Bearer ${t}`, Accept: "application/json" } });
   if (!res.ok) {
     const text = (await res.text().catch(() => "")).slice(0, 300);
     throw new ApiError(`GET ${path} returned HTTP ${res.status}${text ? `: ${text}` : ""}`, res.status);

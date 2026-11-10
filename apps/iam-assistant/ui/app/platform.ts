@@ -1,4 +1,5 @@
 import { getIntentLink } from "@dynatrace-sdk/navigation";
+import { getEnvironmentUrl } from "@dynatrace-sdk/app-environment";
 import { httpClient } from "@dynatrace-sdk/http-client";
 import { settingsObjectsClient } from "@dynatrace-sdk/client-classic-environment-v2";
 
@@ -62,4 +63,22 @@ export async function listExtensions(): Promise<{ name: string; version: string 
     key = r?.nextPageKey ?? undefined;
   } while (key);
   return out;
+}
+
+/**
+ * Hosts the app functions call for the Account Management API, by the stack this environment is on (mirrors
+ * accountStack in api/app-credentials.ts): sprint and dev environments use their own SSO and API hosts.
+ */
+export function accountHosts(): string[] {
+  let host = "";
+  try {
+    host = new URL(getEnvironmentUrl()).hostname.toLowerCase();
+  } catch {
+    host = typeof location !== "undefined" ? location.hostname.toLowerCase() : "";
+  }
+  if (host.endsWith(".dynatracelabs.com")) {
+    if (/(^|\.)sprint\./.test(host)) return ["sso-sprint.dynatracelabs.com", "hard.token.dynatracelabs.com", "api-hardening.internal.dynatracelabs.com"];
+    if (/(^|\.)dev\./.test(host)) return ["sso-dev.dynatracelabs.com", "dev.token.dynatracelabs.com", "api-dev.internal.dynatracelabs.com"];
+  }
+  return ["sso.dynatrace.com", "api.dynatrace.com"];
 }

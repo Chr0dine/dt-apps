@@ -137,6 +137,11 @@ the *Account Management access* card walks through it, and the card's form does 
    enforced, add `sso.dynatrace.com` (token endpoint) and `api.dynatrace.com` (Account Management API). The
    [catalogue banner](#heading-description-and-catalogue-banner) additionally needs `docs.dynatrace.com` there for the
    `iam-reference` function. Without it, the tab uses the bundled snapshot of the IAM reference.
+   Sprint and dev environments (`*.sprint.apps.dynatracelabs.com`, `*.dev.apps.dynatracelabs.com`) belong to accounts
+   on separate stacks, and the functions call that stack instead: sprint uses `sso-sprint.dynatracelabs.com` /
+   `hard.token.dynatracelabs.com` and `api-hardening.internal.dynatracelabs.com`; dev uses `sso-dev.dynatracelabs.com` /
+   `dev.token.dynatracelabs.com` and `api-dev.internal.dynatracelabs.com`. The OAuth client must be created in that
+   stack's Account Management (see [Overview](overview.md#sprint-and-dev-environments)).
 3. **App settings.** Saving the form stores the account UUID, client ID and client secret in the app's single settings
    object (schema `app-credentials`, [`settings/schemas/app-credentials.schema.json`](../settings/schemas/app-credentials.schema.json)).
    The secret is a `secret` property: only the app's functions read it in plain text, and the UI never shows it. The

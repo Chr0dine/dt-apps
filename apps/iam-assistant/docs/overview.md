@@ -58,3 +58,16 @@ If `builtin:dt-javascript-runtime.allowed-outbound-connections` is enforced, all
 | Only the app's admins can see the account overview | The OAuth client is stored but limited to admins. |
 | Reading the account's groups failed | The token request or an API call failed; the message has the HTTP status. |
 | Some data could not be read | Members of one or more groups could not be read; those groups show "not readable" and are left out of the user counts. |
+
+## Sprint and dev environments
+
+On `*.sprint.apps.dynatracelabs.com` and `*.dev.apps.dynatracelabs.com` the account lives on a separate stack, so the
+function calls that stack's SSO and Account Management API instead of `sso.dynatrace.com` / `api.dynatrace.com`:
+
+| Stack | Token endpoint (tried in order) | Account Management API |
+|---|---|---|
+| Sprint | `sso-sprint.dynatracelabs.com`, `hard.token.dynatracelabs.com` | `api-hardening.internal.dynatracelabs.com` |
+| Dev | `sso-dev.dynatracelabs.com`, `dev.token.dynatracelabs.com` | `api-dev.internal.dynatracelabs.com` |
+
+Create the OAuth client in that stack's Account Management, and allow those hosts if the outbound allowlist is
+enforced. Sending a sprint client to production SSO is answered with `400 invalid_request`.

@@ -27,7 +27,6 @@ import {
 } from "../iamAccess";
 import {
   ACCESS_DOCS,
-  OUTBOUND_HOSTS,
   isUuid,
   readSetupStatus,
   resolveSubject,
@@ -39,7 +38,7 @@ import {
 } from "../iamAccessApi";
 import { iamRecordTable, iamVisibleRecordsQuery, type Timeframe } from "../queries";
 import { QueryActions } from "../components";
-import { OUTBOUND_SCHEMA, settingsLink } from "../platform";
+import { OUTBOUND_SCHEMA, accountHosts, settingsLink } from "../platform";
 import { CatalogBanner, DocLink, DocLinks, card, code, hint, linkStyle, plural } from "./IamShared";
 import { AppIcon } from "./IamPolicyTab";
 import { AppCredentialsCard } from "./AppCredentials";
@@ -346,7 +345,7 @@ export function SetupCard({ setup, onSaved, needsIam = true }: { setup: SetupSta
           <MessageContainer.Description>
             <span>
               {setup.failure.status === "blocked"
-                ? `The app function cannot reach ${OUTBOUND_HOSTS.join(" and ")}: add both hosts to the allowed outbound connections.`
+                ? `The app function cannot reach ${accountHosts().join(", ")}: add these hosts to the allowed outbound connections.`
                 : setup.failure.status === "forbidden"
                   ? setup.failure.message
                   : `The stored OAuth client does not work: ${setup.failure.message}`}

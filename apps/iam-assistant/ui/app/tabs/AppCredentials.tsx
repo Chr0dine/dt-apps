@@ -6,7 +6,7 @@ import { Checkbox, PasswordInput, TextInput } from "@dynatrace/strato-components
 import { CheckmarkIcon, WarningIcon } from "@dynatrace/strato-icons";
 import Colors from "@dynatrace/strato-design-tokens/colors";
 import { ACCOUNT_SCOPES, CREDENTIAL_DOCS, clearCredential, saveAccount, useCredentials, type ActionResult, type CredentialStatus, type CredentialUse } from "../appCredentials";
-import { OUTBOUND_SCHEMA, settingsLink } from "../platform";
+import { OUTBOUND_SCHEMA, accountHosts, settingsLink } from "../platform";
 import { ACCOUNT_MANAGEMENT_URL } from "../iamCatalog";
 import { DocLink, DocLinks, code, hint } from "./IamShared";
 
@@ -140,7 +140,7 @@ function AccountForm({ status, onDone }: { status: CredentialStatus; onDone: (r:
           (read-only; account-idm-read alone is enough for the Overview, the iam:* scopes are for the Permissions Test). The page also shows the account UUID.
         </li>
         <li>
-          Allow {scopeList(["sso.dynatrace.com", "api.dynatrace.com"])}in the {outbound ? <DocLink href={outbound}>allowed outbound connections</DocLink> : "allowed outbound connections"} if that
+          Allow {scopeList(accountHosts())}in the {outbound ? <DocLink href={outbound}>allowed outbound connections</DocLink> : "allowed outbound connections"} if that
           allowlist is enforced.
         </li>
       </ol>

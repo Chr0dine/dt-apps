@@ -1,6 +1,6 @@
 import { appSettingsObjectsClient } from "@dynatrace-sdk/client-app-settings-v2";
 import { effectivePermissionsClient } from "@dynatrace-sdk/client-platform-management-service";
-import { getAppId } from "@dynatrace-sdk/app-environment";
+import { getAppId, getEnvironmentUrl } from "@dynatrace-sdk/app-environment";
 
 // Shared by the app functions: the app's credentials live in one app settings object (schema app-credentials,
 // settings/schemas/app-credentials.schema.json). Properties of type `secret` come back in plain text only when the call
@@ -82,8 +82,38 @@ export async function callerCanManage(): Promise<boolean> {
 }
 
 // --- Account Management API token (OAuth client credentials) ---------------------------------------------------------
-export const SSO = "https://sso.dynatrace.com/sso/oauth2/token";
-export const ACCOUNT_API = "https://api.dynatrace.com";
+// Sprint and dev environments (*.sprint|dev.apps.dynatracelabs.com) belong to accounts on separate stacks, each with its
+// own SSO and Account Management API. Calling production SSO with a sprint account's client answers 400 invalid_request.
+// Hosts as dtctl uses them; the token endpoint is tried in order, moving on only when one is unreachable or 404s.
+export type AccountStack = { name: "production" | "sprint" | "dev"; tokenUrls: string[]; api: string };
+const STACKS: Record<AccountStack["name"], AccountStack> = {
+  production: { name: "production", tokenUrls: ["https://sso.dynatrace.com/sso/oauth2/token"], api: "https://api.dynatrace.com" },
+  sprint: {
+    name: "sprint",
+    tokenUrls: ["https://sso-sprint.dynatracelabs.com/sso/oauth2/token", "https://hard.token.dynatracelabs.com/sso/oauth2/token"],
+    api: "https://api-hardening.internal.dynatracelabs.com",
+  },
+  dev: {
+    name: "dev",
+    tokenUrls: ["https://sso-dev.dynatracelabs.com/sso/oauth2/token", "https://dev.token.dynatracelabs.com/sso/oauth2/token"],
+    api: "https://api-dev.internal.dynatracelabs.com",
+  },
+};
+
+/** The SSO / Account Management stack of the environment this function runs in. */
+export function accountStack(): AccountStack {
+  let host = "";
+  try {
+    host = new URL(getEnvironmentUrl()).hostname.toLowerCase();
+  } catch {
+    // not in an environment (local tooling): production
+  }
+  if (host.endsWith(".dynatracelabs.com")) {
+    if (/(^|\.)sprint\./.test(host)) return STACKS.sprint;
+    if (/(^|\.)dev\./.test(host)) return STACKS.dev;
+  }
+  return STACKS.production;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -99,16 +129,31 @@ export type AccountClient = { clientId: string; clientSecret: string; accountUui
 // Account tokens live 300 s; a warm function instance reuses one per client and scope set until shortly before it expires.
 const tokenCache = new Map<string, { token: string; scopes: string; until: number }>();
 
-/** Bearer token for api.dynatrace.com: tries each scope set in order, moving on only on invalid_scope. */
+/** POST to the stack's token endpoints in order; the next one is tried only if one cannot be reached or answers 404. */
+async function postToken(stack: AccountStack, body: string): Promise<Response> {
+  let lastError: unknown = null;
+  for (const url of stack.tokenUrls) {
+    try {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
+      if (res.status !== 404 || url === stack.tokenUrls[stack.tokenUrls.length - 1]) return res;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError ?? new Error(`No token endpoint of the ${stack.name} stack answered.`);
+}
+
+/** Bearer token for the Account Management API: tries each scope set in order, moving on only on invalid_scope. */
 export async function accountToken(c: AccountClient, scopeSets: string[]): Promise<{ token: string; scopes: string }> {
+  const stack = accountStack();
   let last = "";
   let code = "";
   for (const scope of scopeSets) {
-    const key = `${c.clientId}|${c.accountUuid}|${scope}`;
+    const key = `${stack.name}|${c.clientId}|${c.accountUuid}|${scope}`;
     const hit = tokenCache.get(key);
     if (hit && hit.until > Date.now()) return hit;
     const body = new URLSearchParams({ grant_type: "client_credentials", client_id: c.clientId, client_secret: c.clientSecret, scope, resource: `urn:dtaccount:${c.accountUuid}` });
-    const res = await fetch(SSO, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() });
+    const res = await postToken(stack, body.toString());
     const json = (await res.json().catch(() => ({}))) as { access_token?: string; expires_in?: number; scope?: string; error?: string; error_description?: string };
     if (res.ok && json.access_token) {
       const entry = { token: json.access_token, scopes: json.scope ?? scope, until: Date.now() + Math.max(30, (json.expires_in ?? 300) - 30) * 1000 };
@@ -119,10 +164,11 @@ export async function accountToken(c: AccountClient, scopeSets: string[]): Promi
     code = json.error ?? "";
     if (code !== "invalid_scope") break;
   }
-  throw new ApiError(`The OAuth token request was rejected (${last}). ${tokenHint(code, c.accountUuid, scopeSets)}`, 401);
+  const where = stack.name === "production" ? "" : ` by the ${stack.name} SSO (${new URL(stack.tokenUrls[0]).host})`;
+  throw new ApiError(`The OAuth token request was rejected${where} (${last}). ${tokenHint(code, c.accountUuid, scopeSets)}`, 401);
 }
 
-/** What a token error from sso.dynatrace.com usually means (it answers most of them with HTTP 400). */
+/** What a token error from Dynatrace SSO usually means (it answers most of them with HTTP 400). */
 function tokenHint(code: string, accountUuid: string, scopeSets: string[]): string {
   switch (code) {
     case "invalid_scope":

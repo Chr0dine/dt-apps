@@ -14,7 +14,6 @@ import type { AccessBinding, AccessSubject } from "./iamAccess";
 // - whether the function can use the account OAuth client (stored in the app settings by AppCredentialsCard).
 // ---------------------------------------------------------------------------
 
-export const OUTBOUND_HOSTS = ["sso.dynatrace.com", "api.dynatrace.com"];
 export const ACCESS_DOCS = {
   oauth: { title: "OAuth clients", url: "https://docs.dynatrace.com/docs/manage/identity-access-management/access-tokens-and-oauth-clients/oauth-clients" },
   accountApi: { title: "Account Management API", url: "https://docs.dynatrace.com/docs/dynatrace-api/account-management-api" },
