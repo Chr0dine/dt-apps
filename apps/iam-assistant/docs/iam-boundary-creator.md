@@ -14,7 +14,7 @@ boundary itself.
 | --- | --- |
 | App | IAM Assistant (see [README](../README.md)) |
 | Tab id | `iam-boundary` |
-| Main source files | [IamBoundaryTab.tsx](../ui/app/tabs/IamBoundaryTab.tsx), [IamShared.tsx](../ui/app/tabs/IamShared.tsx), [iamPolicy.ts](../ui/app/iamPolicy.ts) (`boundaryLines`, `renderBoundary`, `validateBoundary`, `applyBoundary`, `draftFromBoundaryText`), [iamCatalog.ts](../ui/app/iamCatalog.ts), [iamValues.ts](../ui/app/iamValues.ts), [iamApps.ts](../ui/app/iamApps.ts), [iamDrafts.tsx](../ui/app/iamDrafts.tsx), [queries.ts](../ui/app/queries.ts#L1312), [iam-reference.function.ts](../api/iam-reference.function.ts), [analyses.ts](../ui/app/analyses.ts#L788) (`analyzeIamBoundary`) |
+| Main source files | [IamBoundaryTab.tsx](../ui/app/tabs/IamBoundaryTab.tsx), [IamShared.tsx](../ui/app/tabs/IamShared.tsx), [iamPolicy.ts](../ui/app/iamPolicy.ts) (`boundaryLines`, `renderBoundary`, `validateBoundary`, `applyBoundary`, `draftFromBoundaryText`), [iamCatalog.ts](../ui/app/iamCatalog.ts), [iamValues.ts](../ui/app/iamValues.ts), [iamApps.ts](../ui/app/iamApps.ts), [iamDrafts.tsx](../ui/app/iamDrafts.tsx), [queries.ts](../ui/app/queries.ts), [iam-reference.function.ts](../api/iam-reference.function.ts), [analyses.ts](../ui/app/analyses.ts) (`analyzeIamBoundary`) |
 
 ## Contents
 
@@ -112,7 +112,7 @@ a sticky card; on narrow windows the editor goes below.
 policies it is assigned with; each condition applies only to the permissions that support it (global conditions to
 all), at most 10 conditions, no AND, and DENY statements are never changed; with a *Policy boundaries* link.
 
-The catalogue banner is the same as on the IAM Policy Creator ([`CatalogBanner`](../ui/app/tabs/IamShared.tsx#L71)),
+The catalogue banner is the same as on the IAM Policy Creator ([`CatalogBanner`](../ui/app/tabs/IamShared.tsx)),
 shared by all IAM tabs (one docs read per page load):
 
 | State | What you see |
@@ -124,7 +124,7 @@ shared by all IAM tabs (one docs read per page load):
 
 ### Name and examples
 
-Card "Name and examples" ([`StartCard`](../ui/app/tabs/IamBoundaryTab.tsx#L159)):
+Card "Name and examples" ([`StartCard`](../ui/app/tabs/IamBoundaryTab.tsx)):
 
 - **Name (export file name; the boundary text holds conditions only)**, placeholder "e.g. Team A data". The name
   is not written into the text.
@@ -139,7 +139,7 @@ Card "Name and examples" ([`StartCard`](../ui/app/tabs/IamBoundaryTab.tsx#L159))
 
 ### Apps
 
-Card "Apps" ([`AppsCard`](../ui/app/tabs/IamBoundaryTab.tsx#L204)): "One shared:app-id line: limits running and
+Card "Apps" ([`AppsCard`](../ui/app/tabs/IamBoundaryTab.tsx)): "One shared:app-id line: limits running and
 installing apps, app settings and app states to these apps."
 
 - **Operator**: the operators of `shared:app-id` across permissions (`=`, `!=`, `IN`, `NOT IN`, `startsWith`,
@@ -153,7 +153,7 @@ installing apps, app settings and app states to these apps."
 
 ### Dimensional data
 
-Card "Dimensional data" ([`DimensionsCard`](../ui/app/tabs/IamBoundaryTab.tsx#L224)): "Which records the group
+Card "Dimensional data" ([`DimensionsCard`](../ui/app/tabs/IamBoundaryTab.tsx)): "Which records the group
 may read. A dimension becomes one line per service you tick (storage covers Grail tables; settings and synthetic have
 their own security context condition)."
 
@@ -170,7 +170,7 @@ fieldset, file path, store and query consumption). The label shows the current s
 | Host name | `host.name` | `storage:`, `dev-obs:` |
 | AWS account, Azure subscription, Azure resource group, GCP project, Frontend, Event kind / type / provider, Log source, Metric key, Entity type | `aws.account.id`, `azure.subscription`, `azure.resource.group`, `gcp.project.id`, `frontend.name`, `event.*`, `log.source`, `metric.key`, `entity.type` | `storage:` |
 
-Inside each section ([`DimensionEditor`](../ui/app/tabs/IamBoundaryTab.tsx#L257)):
+Inside each section ([`DimensionEditor`](../ui/app/tabs/IamBoundaryTab.tsx)):
 
 - **Operator**: the union of the operators of the ticked keys (default `IN` when offered). An operator that some
   ticked key does not support is still offered; the editor reports it.
@@ -182,7 +182,7 @@ Each ticked key becomes its own line; an unticked or valueless dimension writes 
 
 ### More conditions
 
-Card "More conditions" ([`ConditionsCard`](../ui/app/tabs/IamBoundaryTab.tsx#L302)): "Any condition from the IAM
+Card "More conditions" ([`ConditionsCard`](../ui/app/tabs/IamBoundaryTab.tsx)): "Any condition from the IAM
 policy reference: management zones (environment:management-zone), settings schemas and scopes, extensions, Grail
 tables and fieldsets, global date and time. Add the same condition twice to allow either value set (each statement
 is multiplied per line)."
@@ -197,7 +197,7 @@ is multiplied per line)."
 
 ### Value pickers
 
-Same component as on the IAM Policy Creator ([`ValuePicker`](../ui/app/tabs/IamShared.tsx#L198)):
+Same component as on the IAM Policy Creator ([`ValuePicker`](../ui/app/tabs/IamShared.tsx)):
 
 - List operators (`IN`, `NOT IN`, `MATCH`) take several values, others one; switching keeps the first value.
 - Suggestions load when the picker first opens ("Loading values from the tenant…" / "Could not load suggestions:
@@ -213,7 +213,7 @@ Same component as on the IAM Policy Creator ([`ValuePicker`](../ui/app/tabs/IamS
 
 ### Check against a policy
 
-Card "Check against a policy" ([`PreviewCard`](../ui/app/tabs/IamBoundaryTab.tsx#L355)): "The effective statements
+Card "Check against a policy" ([`PreviewCard`](../ui/app/tabs/IamBoundaryTab.tsx)): "The effective statements
 when a policy is assigned with this boundary, worked out with the rules in How are policy boundaries applied?".
 
 - Toggle **Policy from the IAM Policy Creator** (default: the Policy Creator's editor text, hand edits included, or
@@ -241,7 +241,7 @@ Only boundary conditions without an error diagnostic take part in the preview.
 
 ### Boundary editor (right pane)
 
-`EditorPane` ([IamShared.tsx](../ui/app/tabs/IamShared.tsx#L455)), title "Boundary":
+`EditorPane` ([IamShared.tsx](../ui/app/tabs/IamShared.tsx)), title "Boundary":
 
 - Counter "N of 10 conditions · N errors · N warnings" (N = parsed conditions).
 - Code editor (460 px) with underlines, gutter marks and hover messages; placeholder "Select conditions on the left,
@@ -274,7 +274,7 @@ this boundary draft.
 
 ## Boundary text the app writes
 
-[`boundaryLines` / `renderBoundary`](../ui/app/iamPolicy.ts#L278):
+[`boundaryLines` / `renderBoundary`](../ui/app/iamPolicy.ts):
 
 ```
 boundary  = { condition ";" NL }
@@ -316,13 +316,13 @@ gives a warning "MATCH is not supported for storage:dt.security_context on stora
 
 ### What the parser accepts
 
-[`validateBoundary`](../ui/app/iamPolicy.ts#L567) reads the text line by line: one `key op value` per line, ended by
+[`validateBoundary`](../ui/app/iamPolicy.ts) reads the text line by line: one `key op value` per line, ended by
 `;`, with the same value rules as policies (double or single quotes, `\` escapes, lists in parentheses,
 case-insensitive operators written back in canonical case).
 
 ### Load this text into the builder
 
-[`draftFromBoundaryText`](../ui/app/iamPolicy.ts#L708), used by the examples and the editor link:
+[`draftFromBoundaryText`](../ui/app/iamPolicy.ts), used by the examples and the editor link:
 
 - Every condition without an error is loaded. The first `shared:app-id` line becomes the Apps card; every other
   line, including dimension keys, becomes a **More conditions** row (the Dimensional data card stays empty).
@@ -341,7 +341,7 @@ storage:team = "z";
 
 ## How a boundary is applied (preview engine)
 
-[`applyBoundary`](../ui/app/iamPolicy.ts#L642), step by step:
+[`applyBoundary`](../ui/app/iamPolicy.ts), step by step:
 
 1. Only statements without syntax errors are used.
 2. A DENY statement is copied unchanged (all its permissions in one row).
@@ -388,7 +388,7 @@ case `ALLOW storage:logs:read, storage:entities:read;` with `storage:k8s.namespa
 
 ## Checks and scoring
 
-No gauges or scores. The editor diagnostics ([`validateBoundary`](../ui/app/iamPolicy.ts#L567)) and the AI Assist
+No gauges or scores. The editor diagnostics ([`validateBoundary`](../ui/app/iamPolicy.ts)) and the AI Assist
 rules are the checks. `<source>` is `live docs` or `snapshot of 2026-10-24`.
 
 | Severity | Rule | Message |
@@ -419,9 +419,9 @@ All DQL on this page is value suggestions. Each query runs when its picker is fi
 when the app timeframe changes. Timeframe: `from:now()-24h` (default), `-7d`, `-30d`; logs and spans
 `samplingRatio:10000` (24 h) or `100000` (7 d, 30 d); `scanLimitGBytes:5` on logs, spans and event tables; the
 `metrics` command at most 10 days (`from:now()-10d` for 30 d). Mapping from key to query:
-[`valueInfo`](../ui/app/iamValues.ts#L58).
+[`valueInfo`](../ui/app/iamValues.ts).
 
-| # | Name (function in [queries.ts](../ui/app/queries.ts#L1312)) | Condition keys |
+| # | Name (function in [queries.ts](../ui/app/queries.ts)) | Condition keys |
 | --- | --- | --- |
 | 1 | `iamFieldValuesQuery` | security context (storage, settings, synthetic), host group, Kubernetes cluster / namespace, host name (storage and dev-obs), cloud accounts, frontend; `dev-obs:host.group` uses `dt.host_group.id` |
 | 2 | `iamEventFieldValuesQuery` | `storage:event.kind` / `type` / `provider`, `openpipeline:event-type` / `event-provider` |
@@ -571,7 +571,7 @@ smartscapeNodes "ACTIVEGATE", from:now()-24h
 | sort value asc
 ```
 
-Rows with an empty `value` are dropped client side ([`useConditionValues`](../ui/app/iamValues.ts#L222)).
+Rows with an empty `value` are dropped client side ([`useConditionValues`](../ui/app/iamValues.ts)).
 
 ## API calls
 
@@ -620,8 +620,8 @@ do not have to copy it into Account Management by hand.
 
 ## AI Assist on this page
 
-[`analyzeIamBoundary`](../ui/app/analyses.ts#L800), rule-based and local, computed while the panel is open. Input
-(built in [IamBoundaryTab.tsx](../ui/app/tabs/IamBoundaryTab.tsx#L86)): parsed condition count, error and warning
+[`analyzeIamBoundary`](../ui/app/analyses.ts), rule-based and local, computed while the panel is open. Input
+(built in [IamBoundaryTab.tsx](../ui/app/tabs/IamBoundaryTab.tsx)): parsed condition count, error and warning
 counts, services (`global` or the key's service prefix), repeated keys, global keys, the preview (only when the
 previewed policy has an error-free ALLOW: statement count, effective count, ALLOW permissions not narrowed, DENY
 count) and whether the docs are live.
@@ -649,7 +649,7 @@ different data scopes."
 | Fix the errors under the editor; split conditions joined with AND into separate lines (or separate boundaries). | high | errors |
 | Add a condition those permissions support (for entities, storage:dt.security_context or storage:entity.type), or leave them out of the policy bound with this boundary. | high | not-narrowed permissions |
 | Close to 10 conditions: assign several boundaries to the same policy instead; each boundary is evaluated separately. | medium | 9 or more conditions |
-| Create it in Account Management > Identity & access management > Policy management > Boundaries, then select it when assigning policies to a group. | low | always |
+| An admin of this app can send the boundary with Create in Account Management below the editor (the API validates it first), or create it in Account Management > Identity & access management > Policy management > Boundaries. It narrows nothing until it is selected when binding a policy to a group. | low | always |
 
 ## Limitations and edge cases
 
@@ -701,6 +701,6 @@ different data scopes."
 | [ui/app/iamApps.ts](../ui/app/iamApps.ts) | App Registry catalogue (for the Policy Creator text in the preview) |
 | [ui/app/iamDrafts.tsx](../ui/app/iamDrafts.tsx) | Drafts in localStorage |
 | [ui/app/iamSnapshot.json](../ui/app/iamSnapshot.json) | Bundled catalogue |
-| [ui/app/queries.ts](../ui/app/queries.ts#L1312) | Value suggestion queries |
+| [ui/app/queries.ts](../ui/app/queries.ts) | Value suggestion queries |
 | [api/iam-reference.function.ts](../api/iam-reference.function.ts), [api/iam-reference-parser.ts](../api/iam-reference-parser.ts), [scripts/sync-iam-reference.mjs](../scripts/sync-iam-reference.mjs) | Live docs read, parser, snapshot refresh |
-| [ui/app/analyses.ts](../ui/app/analyses.ts#L788) | `analyzeIamBoundary` |
+| [ui/app/analyses.ts](../ui/app/analyses.ts) | `analyzeIamBoundary` |

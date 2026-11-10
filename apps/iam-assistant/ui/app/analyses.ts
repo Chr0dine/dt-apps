@@ -89,7 +89,7 @@ export function analyzeIamPolicy(d: IamPolicyInsightInput): AIInsightsData {
   if (d.securityContextWithoutMatch) recommendations.push({ impact: "medium", text: 'Use MATCH for dt.security_context (e.g. MATCH ("TeamA")) if any data source sets several security contexts on a record.' });
   if (d.denyConditionalGrail.length || d.denyUnconditional) recommendations.push({ impact: "medium", text: "Replace DENY statements with narrower ALLOW statements where possible; DENY overrules every ALLOW and is hard to reason about across policies." });
   if (d.dims.length && !d.bindParams) recommendations.push({ impact: "low", text: "If several teams need the same permissions for different data, write the permissions once and move the data scope into one boundary per team, or use ${bindParam:…} templating." });
-  recommendations.push({ impact: "low", text: "Copy the text into Account Management > Identity & access management > Policy management > Create policy; it is validated again on save." });
+  recommendations.push({ impact: "low", text: d.errors ? "Once the errors are fixed, an admin of this app can send the policy with Create in Account Management below the editor (the API validates it first), or copy it into Account Management > Identity & access management > Policy management. Then bind it to a group." : "An admin of this app can send the policy with Create in Account Management below the editor (the API validates it first; choose this environment or the whole account), or copy it into Account Management > Identity & access management > Policy management. It grants nothing until it is bound to a group." });
   return { summary, insights, recommendations };
 }
 
@@ -131,7 +131,7 @@ export function analyzeIamBoundary(d: IamBoundaryInsightInput): AIInsightsData {
   if (d.errors) recommendations.push({ impact: "high", text: "Fix the errors under the editor; split conditions joined with AND into separate lines (or separate boundaries)." });
   if (d.preview?.notNarrowed.length) recommendations.push({ impact: "high", text: "Add a condition those permissions support (for entities, storage:dt.security_context or storage:entity.type), or leave them out of the policy bound with this boundary." });
   if (d.conditions >= 9) recommendations.push({ impact: "medium", text: "Close to 10 conditions: assign several boundaries to the same policy instead; each boundary is evaluated separately." });
-  recommendations.push({ impact: "low", text: "Create it in Account Management > Identity & access management > Policy management > Boundaries, then select it when assigning policies to a group." });
+  recommendations.push({ impact: "low", text: "An admin of this app can send the boundary with Create in Account Management below the editor (the API validates it first), or create it in Account Management > Identity & access management > Policy management > Boundaries. It narrows nothing until it is selected when binding a policy to a group." });
   return { summary, insights, recommendations };
 }
 
@@ -155,7 +155,11 @@ export type IamAccessInsightInput = {
   data: { unrestricted: string[]; limited: string[]; conditional: string[]; none: string[]; denied: string[] };
   dimensions: string[];
   unboundParams: number;
+  /** The stored client works (Overview) but its token lacks iam:bindings:read / iam:policies:read / iam:boundaries:read and iam-policies-management. */
+  iamScopesMissing: boolean;
 };
+
+const IAM_SCOPES_REC: RecommendationItem = { impact: "high", text: "Add iam:bindings:read, iam:policies:read and iam:boundaries:read (or iam-policies-management) to the OAuth client in Account Management; account-idm-read alone only covers the Overview and the user and group search." };
 
 export function analyzeIamAccess(d: IamAccessInsightInput): AIInsightsData {
   if (!d.subject) {
@@ -164,8 +168,12 @@ export function analyzeIamAccess(d: IamAccessInsightInput): AIInsightsData {
     if (d.mode !== "draft" && d.setup === "missing")
       insights.push({ severity: "info", icon: "🔑", text: "No OAuth client is stored yet. Users and groups can be found, but their policies are only readable through the Account Management API." });
     if (d.failure) insights.push({ severity: "warning", icon: "⚠️", text: d.failure });
+    if (d.mode !== "draft" && d.iamScopesMissing) {
+      insights.push({ severity: "warning", icon: "🔐", text: "The stored OAuth client only reads users and groups: testing a user or group also needs the IAM read scopes." });
+      recommendations.push(IAM_SCOPES_REC);
+    }
     if (d.mode !== "draft" && d.setup !== "ok")
-      recommendations.push({ impact: "high", text: "Create a read-only OAuth client (account-idm-read, iam:bindings:read, iam:policies:read, iam:boundaries:read) and save it in Account Management access; leave “Every user of this app” off unless every app user may see the account's IAM setup." });
+      recommendations.push({ impact: "high", text: "Create a read-only OAuth client (account-idm-read, iam:bindings:read, iam:policies:read, iam:boundaries:read) and save it in Account Management access; leave “Every user of this app” off unless every app user may see the account's IAM setup. On a sprint or dev environment, create it in that stack's Account Management." });
     recommendations.push({ impact: "medium", text: "Use Policy Creator draft to check a new policy (and boundary) before you bind it to a group." });
     return {
       summary: d.mode === "draft" ? "Build a policy in the IAM Policy Creator tab to test it here." : "Search for a user (name or email) or a group (name contains) and click a result to test it.",
@@ -198,7 +206,7 @@ export function analyzeIamAccess(d: IamAccessInsightInput): AIInsightsData {
 
 export type IamOverviewInsightInput = {
   /** "ok" with a model, or why there is none. */
-  state: "loading" | "ok" | "no-credential" | "forbidden" | "failed";
+  state: "loading" | "ok" | "no-credential" | "forbidden" | "unauthorized" | "blocked" | "failed";
   failure: string | null;
   model: OverviewModel | null;
 };
@@ -217,16 +225,24 @@ export function analyzeIamOverview(d: IamOverviewInsightInput): AIInsightsData {
       insights: [
         { severity: "info", icon: "ℹ️", text: "Groups, their type (SAML, local, SCIM) and their members are only exposed by the account-level Account Management API, which this app reads through its iam-access function." },
       ],
-      recommendations: setup || d.state === "failed"
-        ? [{ impact: "high", text: "Create a read-only OAuth client (account-idm-read, iam:bindings:read, iam:policies:read, iam:boundaries:read) in Account Management and save it under Account Management access on this page." }]
-        : d.state === "forbidden"
-          ? [{ impact: "medium", text: "Ask an admin of this app to allow the Overview and Permissions Test for every user, or to grant you app-settings:objects:write for this app." }]
-          : [],
+      recommendations:
+        setup
+          ? [{ impact: "high", text: "Create an OAuth client in Account Management with account-idm-read (enough for this page; add iam:bindings:read, iam:policies:read and iam:boundaries:read for the Permissions Test) and save it under Account Management access on this page. On a sprint or dev environment, create it in that stack's Account Management." }]
+          : d.state === "unauthorized"
+            ? [{ impact: "high", text: "The token request or an API call was refused: the message under Account Management access says whether the client ID or secret, the account UUID or the scopes are wrong. A client from another stack (production vs sprint or dev) is refused too." }]
+            : d.state === "blocked"
+              ? [{ impact: "high", text: "Add the hosts listed under Account Management access to builtin:dt-javascript-runtime.allowed-outbound-connections, then click Refresh." }]
+              : d.state === "forbidden"
+                ? [{ impact: "medium", text: "Ask an admin of this app to allow the Overview and Permissions Test for every user, or to grant you app-settings:objects:write for this app." }]
+                : d.state === "failed"
+                  ? [{ impact: "medium", text: "Click Refresh; if it fails again, the message names the Account Management API call that failed and its HTTP status." }]
+                  : [],
     };
   }
-  const summary = `${count(m.totalGroups, "group")} in the account: ${count(m.groups.SAML, "SAML group")} and ${count(m.groups.LOCAL, "local group")}${m.groups.SCIM ? `, ${count(m.groups.SCIM, "SCIM group")}` : ""}. ${count(m.usersIn.SAML, "user")} ${m.usersIn.SAML === 1 ? "is" : "are"} in SAML groups and ${count(m.usersIn.LOCAL, "user")} in local groups, out of ${count(m.totalUsers, "account user")}.`;
-  const insights: InsightItem[] = [];
+  // The built-in all-users group is not a configured group: leave it out of the count so the parts add up.
   const real = m.groups.SAML + m.groups.LOCAL + m.groups.SCIM;
+  const summary = `${count(real, "group")} configured in the account: ${count(m.groups.SAML, "SAML group")} and ${count(m.groups.LOCAL, "local group")}${m.groups.SCIM ? `, ${count(m.groups.SCIM, "SCIM group")}` : ""}${m.groups.ALL_USERS ? ", plus the built-in all-users group" : ""}. ${count(m.usersIn.SAML, "user")} ${m.usersIn.SAML === 1 ? "is" : "are"} in SAML groups and ${count(m.usersIn.LOCAL, "user")} in local groups, out of ${count(m.totalUsers, "account user")}.`;
+  const insights: InsightItem[] = [];
   if (m.groups.SAML && !m.groups.LOCAL) insights.push({ severity: "good", icon: "🔐", text: "Every group is federated: access is driven by the identity provider, so joiners, movers and leavers are handled there." });
   else if (m.groups.SAML && m.groups.LOCAL) {
     const share = Math.round((m.groups.LOCAL / real) * 100);
@@ -243,7 +259,7 @@ export function analyzeIamOverview(d: IamOverviewInsightInput): AIInsightsData {
   if (m.groups.LOCAL && m.groups.SAML) recommendations.push({ impact: "medium", text: "Move local groups that mirror teams in your identity provider to SAML (federated) groups, so access follows the directory." });
   if (!m.groups.SAML && !m.groups.SCIM) recommendations.push({ impact: "high", text: "Set up SAML federation (or SCIM provisioning) and map identity provider groups to Dynatrace groups." });
   if (m.mix.both) recommendations.push({ impact: "medium", text: "Review users in both SAML and local groups; keep local groups for break-glass or service accounts only." });
-  if (m.emptyGroups.length) recommendations.push({ impact: "low", text: "Remove local groups without members, or the policies bound to them, to keep the IAM setup readable." });
+  if (m.emptyGroups.some((g) => g.type === "LOCAL")) recommendations.push({ impact: "low", text: "Remove local groups without members, or the policies bound to them, to keep the IAM setup readable." });
   recommendations.push({ impact: "low", text: "Use the Permissions Test tab to see what a user or group can open and read in this environment." });
   return { summary, insights, recommendations };
 }

@@ -55,7 +55,12 @@ export function OverviewTab() {
 
   const insight = useMemo<IamOverviewInsightInput>(
     () => ({
-      state: load.status === "loading" ? "loading" : load.status === "ok" ? "ok" : load.failure.status === "no-credential" ? "no-credential" : load.failure.status === "forbidden" ? "forbidden" : "failed",
+      state:
+        load.status === "loading"
+          ? "loading"
+          : load.status === "ok"
+            ? "ok"
+            : (["no-credential", "forbidden", "unauthorized", "blocked"] as const).find((s) => s === load.failure.status) ?? "failed",
       failure: load.status === "failed" ? load.failure.message : null,
       model,
     }),

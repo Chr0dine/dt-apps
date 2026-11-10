@@ -225,7 +225,7 @@ mode clears the current result and the search results.
 - **Search** button. It is disabled below 3 characters or while a search runs. Enter also submits.
 - **Hint text.** User mode: "Matches emails that contain the text and names that start with it (3 characters or
   more)." Group mode: "Matches group names that contain the text (3 characters or more)."
-- **How the search runs** (`searchSubjects`, [`iamAccessApi.ts`](../ui/app/iamAccessApi.ts#L92)):
+- **How the search runs** (`searchSubjects`, [`iamAccessApi.ts`](../ui/app/iamAccessApi.ts)):
   1. The environment IAM API is called first, for up to 50 results.
   2. If it throws (for example because you are not assigned to the account), the search calls the `iam-access`
      function with `action: "search"`. The function lists all users or groups of the account and filters them itself:
@@ -373,7 +373,7 @@ This card is shown once a test is done, and in draft mode once the draft has a p
 ### Apps
 
 This card lists every installed app from the App Registry. Each app's manifest is analysed with the Policy Creator's
-`summarizeApp` ([`iamApps.ts`](../ui/app/iamApps.ts#L55)).
+`summarizeApp` ([`iamApps.ts`](../ui/app/iamApps.ts)).
 
 - **Legend:**
   - **Access**: "opens and can read the data it needs (possibly limited, see Dimensional data)".
@@ -778,13 +778,13 @@ The page runs no DQL by itself. It builds one query per readable table, which yo
 
 | # | Name (function in source) | Runs when | Feeds which section |
 | --- | --- | --- | --- |
-| Q1 | Readable records of one table (`iamVisibleRecordsQuery`, [`queries.ts`](../ui/app/queries.ts#L1455)) | Never automatically. It is built for every *All records* / *Limited* row whose table has a record source, and runs only when you open it in a Notebook or Dashboard. | Dimensional data > By table > **Records query** |
+| Q1 | Readable records of one table (`iamVisibleRecordsQuery`, [`queries.ts`](../ui/app/queries.ts)) | Never automatically. It is built for every *All records* / *Limited* row whose table has a record source, and runs only when you open it in a Notebook or Dashboard. | Dimensional data > By table > **Records query** |
 
 ### Q1 Readable records of one table (iamVisibleRecordsQuery)
 
 - **Source:** `iamVisibleRecordsQuery(tf, table, groups)`, with `iamRecordTable`, `iamPathsDql`, `iamConditionDql`
-  and `IAM_RECORD_SOURCES` in [`ui/app/queries.ts`](../ui/app/queries.ts#L1389). It is called from `DataTable` in
-  [`IamAccessTab.tsx`](../ui/app/tabs/IamAccessTab.tsx#L929).
+  and `IAM_RECORD_SOURCES` in [`ui/app/queries.ts`](../ui/app/queries.ts). It is called from `DataTable` in
+  [`IamAccessTab.tsx`](../ui/app/tabs/IamAccessTab.tsx).
 - **Runs:** it never runs in the tab. The text is rebuilt whenever the timeframe, the subject or the draft changes.
 - **Parameters:**
   - `tf`: the shell timeframe. It sets `from:now()-24h|7d|30d`. For logs and spans it also sets `samplingRatio`
@@ -1063,14 +1063,16 @@ in [IAM Policy Creator](iam-policy-creator.md) or [IAM Boundary Creator](iam-bou
 
 ## AI Assist on this page
 
-`analyzeIamAccess` ([`analyses.ts`](../ui/app/analyses.ts#L852)) receives a summary built by `accessInsight` in the tab.
+`analyzeIamAccess` ([`analyses.ts`](../ui/app/analyses.ts)) receives a summary built by `accessInsight` in the tab.
 It is rule-based and runs locally in the browser: nothing is sent anywhere. In the input:
 
 - "data" lists exclude the buckets row;
 - "none" means *missing* only, and *denied* is a separate list;
 - `allApps` is true when any ALLOW of `app-engine:apps:run` has no `shared:app-id` condition;
 - `timeLimited` is the number of apps whose run status is conditional;
-- `unboundParams` is the number of engine notes that mention `bindParam`.
+- `unboundParams` is the number of engine notes that mention `bindParam`;
+- `iamScopesMissing` is true when the stored client works but its token has neither `iam-policies-management` nor all
+  of `iam:bindings:read`, `iam:policies:read`, `iam:boundaries:read` (a client made for the Overview only).
 
 **No subject yet** (nothing tested, a test failed, or the draft is empty):
 
@@ -1081,12 +1083,17 @@ It is rule-based and runs locally in the browser: nothing is sent anywhere. In t
 | --- | --- | --- |
 | not draft and setup is `missing` | info | "No OAuth client is stored yet. Users and groups can be found, but their policies are only readable through the Account Management API." |
 | a failure message exists (test failure, else setup failure) | warning | the message |
+| not draft and `iamScopesMissing` | warning | "The stored OAuth client only reads users and groups: testing a user or group also needs the IAM read scopes." |
 
 Recommendations:
 
+- **High** (not draft and `iamScopesMissing`): "Add iam:bindings:read, iam:policies:read and iam:boundaries:read (or
+  iam-policies-management) to the OAuth client in Account Management; account-idm-read alone only covers the Overview and
+  the user and group search."
 - **High** (not draft and setup not `ok`): "Create a read-only OAuth client (account-idm-read, iam:bindings:read,
-  iam:policies:read, iam:boundaries:read) and save it in Account Management access; leave “Every user of this app” off unless every
-  app user may see the account's IAM setup."
+  iam:policies:read, iam:boundaries:read) and save it in Account Management access; leave “Every user of this app” off
+  unless every app user may see the account's IAM setup. On a sprint or dev environment, create it in that stack's
+  Account Management."
 - **Medium**, always: "Use Policy Creator draft to check a new policy (and boundary) before you bind it to a group."
 
 **With a subject.** The summary reads: "*name* (or "The draft policy"): *a* of *n* apps with access, *c* conditional,

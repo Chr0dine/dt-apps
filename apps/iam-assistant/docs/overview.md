@@ -71,3 +71,37 @@ function calls that stack's SSO and Account Management API instead of `sso.dynat
 
 Create the OAuth client in that stack's Account Management, and allow those hosts if the outbound allowlist is
 enforced. Sending a sprint client to production SSO is answered with `400 invalid_request`.
+
+## AI Assist on this page
+
+`analyzeIamOverview` ([`analyses.ts`](../ui/app/analyses.ts)) runs locally on the model built by `buildOverview`
+([`iamOverview.ts`](../ui/app/iamOverview.ts)); nothing is sent anywhere.
+
+**Without data**, the summary says why, and the recommendation follows the failure:
+
+| State | Recommendation |
+| --- | --- |
+| No OAuth client stored | Create a client with `account-idm-read` (enough for this page; the `iam:*:read` scopes are for the Permissions Test) and save it under Account Management access; on sprint or dev, in that stack's Account Management. |
+| Token or API call refused | Read the message under Account Management access (client ID or secret, account UUID, scopes); a client from another stack is refused too. |
+| Host blocked | Add the hosts listed under Account Management access to the outbound allowlist, then Refresh. |
+| Limited to admins | Ask an admin to allow the Overview for every user, or to grant `app-settings:objects:write`. |
+| Other failure | Refresh; the message names the failing call and its HTTP status. |
+
+**With data**, the summary counts configured groups (SAML, local, SCIM; the built-in all-users group is mentioned
+separately) and the users in SAML and in local groups. Insights:
+
+| Rule | Severity |
+| --- | --- |
+| Only SAML groups (no local group) | good |
+| SAML and local groups: the local share of configured groups | warning above 50 %, else info |
+| No SAML or SCIM group | warning |
+| Users in both SAML and local groups | info |
+| Users only in local groups | warning when SAML groups exist, else info |
+| Users in no group | info |
+| Groups without members (with the SAML sign-in caveat when one is a SAML group) | info |
+| The three largest groups | info |
+| Groups whose members could not be read | warning |
+
+Recommendations: move local groups that mirror identity-provider teams to SAML (medium, when both exist); set up SAML
+or SCIM (high, when neither exists); review users in both kinds of group (medium); remove empty local groups (low); use
+the Permissions Test (low, always).

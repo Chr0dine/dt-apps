@@ -315,12 +315,16 @@ const hitStyle: React.CSSProperties = {
 };
 
 // --- Setup -------------------------------------------------------------------------------------------------------------
+/** A client with only account-idm-read is enough for the Overview and the search, but not for testing a user or group. */
+function iamScopesMissing(granted: string): boolean {
+  const scopes = granted.split(/\s+/);
+  return !scopes.includes("iam-policies-management") && ["iam:bindings:read", "iam:policies:read", "iam:boundaries:read"].some((s) => !scopes.includes(s));
+}
+
 /** The account OAuth client lives in the app settings (AppCredentialsCard); below it, whether the function can use it. */
 export function SetupCard({ setup, onSaved, needsIam = true }: { setup: SetupStatus | null; onSaved: () => void; needsIam?: boolean }) {
   const outbound = settingsLink(OUTBOUND_SCHEMA);
-  // A client with only account-idm-read is enough for the Overview but not for the Permissions Test.
-  const scopes = setup?.state === "ok" ? setup.scopes.split(/\s+/) : [];
-  const iamMissing = setup?.state === "ok" && !scopes.includes("iam-policies-management") && ["iam:bindings:read", "iam:policies:read", "iam:boundaries:read"].some((s) => !scopes.includes(s));
+  const iamMissing = setup?.state === "ok" && iamScopesMissing(setup.scopes);
   return (
     <Flex flexDirection="column" gap={8}>
       <AppCredentialsCard use="account" onChanged={onSaved} />
@@ -1035,5 +1039,6 @@ function accessInsight(mode: Mode, resolved: Resolved | null, result: AccessResu
     data: { unrestricted: names(["granted"]), limited: names(["scoped"]), conditional: names(["conditional"]), none: names(["missing"]), denied: names(["denied"]) },
     dimensions: result?.dimensions.map((d) => d.label) ?? [],
     unboundParams: result?.notes.filter((n) => n.text.includes("bindParam")).length ?? 0,
+    iamScopesMissing: setup?.state === "ok" && iamScopesMissing(setup.scopes),
   };
 }

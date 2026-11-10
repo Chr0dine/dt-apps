@@ -14,7 +14,7 @@ creates or changes a policy itself.
 | --- | --- |
 | App | IAM Assistant (see [README](../README.md)) |
 | Tab id | `iam-policy` |
-| Main source files | [IamPolicyTab.tsx](../ui/app/tabs/IamPolicyTab.tsx), [IamShared.tsx](../ui/app/tabs/IamShared.tsx), [iamPolicy.ts](../ui/app/iamPolicy.ts), [iamCatalog.ts](../ui/app/iamCatalog.ts), [iamApps.ts](../ui/app/iamApps.ts), [iamValues.ts](../ui/app/iamValues.ts), [iamDrafts.tsx](../ui/app/iamDrafts.tsx), [queries.ts](../ui/app/queries.ts#L1312) (IAM value queries), [iam-reference.function.ts](../api/iam-reference.function.ts), [iam-reference-parser.ts](../api/iam-reference-parser.ts), [analyses.ts](../ui/app/analyses.ts#L702) (`analyzeIamPolicy`) |
+| Main source files | [IamPolicyTab.tsx](../ui/app/tabs/IamPolicyTab.tsx), [IamShared.tsx](../ui/app/tabs/IamShared.tsx), [iamPolicy.ts](../ui/app/iamPolicy.ts), [iamCatalog.ts](../ui/app/iamCatalog.ts), [iamApps.ts](../ui/app/iamApps.ts), [iamValues.ts](../ui/app/iamValues.ts), [iamDrafts.tsx](../ui/app/iamDrafts.tsx), [queries.ts](../ui/app/queries.ts) (IAM value queries), [iam-reference.function.ts](../api/iam-reference.function.ts), [iam-reference-parser.ts](../api/iam-reference-parser.ts), [analyses.ts](../ui/app/analyses.ts) (`analyzeIamPolicy`) |
 
 ## Contents
 
@@ -70,7 +70,7 @@ creates or changes a policy itself.
 - Does the policy I already have (pasted text) use conditions or operators the reference does not document?
 
 Best practices the builder follows and the editor checks, from the pages the code cites
-([`IAM_DOCS` in iamCatalog.ts](../ui/app/iamCatalog.ts#L25)):
+([`IAM_DOCS` in iamCatalog.ts](../ui/app/iamCatalog.ts)):
 
 - Grant app access per app with `app-engine:apps:run WHERE shared:app-id = "<app>"` instead of an unconditional
   `app-engine:apps:run` (which includes apps installed later).
@@ -137,11 +137,11 @@ policies there; that happens outside the app.
 ### Layout and documentation link
 
 Right-aligned above the tab: *IAM Policy Creator documentation*, a link to this page on GitHub
-([`TabDocsLink`](../ui/app/areas.tsx#L86)). The tab is a two-column grid
+([`TabDocsLink`](../ui/app/areas.tsx)). The tab is a two-column grid
 (`repeat(auto-fit, minmax(min(100%, 560px), 1fr))`): the builder on the left, the policy editor on the right in a
 card that stays in view while you scroll (`position: sticky`). On a narrow window the editor moves below the builder.
 
-The whole tab sits inside `IamDraftsProvider` ([App.tsx](../ui/app/App.tsx#L170)), so switching tabs does not lose
+The whole tab sits inside `IamDraftsProvider` ([App.tsx](../ui/app/App.tsx)), so switching tabs does not lose
 work (see [Drafts](#drafts)).
 
 ### AI Assist panel
@@ -156,9 +156,9 @@ Account Management, and says where to create the policy (Identity & access manag
 
 ### Permission catalogue banner
 
-`CatalogBanner` ([IamShared.tsx](../ui/app/tabs/IamShared.tsx#L71)) says where the list of permissions,
+`CatalogBanner` ([IamShared.tsx](../ui/app/tabs/IamShared.tsx)) says where the list of permissions,
 conditions and operators comes from. It is shared with the IAM Boundary Creator and the Permissions Test; the
-docs are read once per page load for all three ([`load` in iamCatalog.ts](../ui/app/iamCatalog.ts#L230)).
+docs are read once per page load for all three ([`load` in iamCatalog.ts](../ui/app/iamCatalog.ts)).
 
 | State | What you see |
 | --- | --- |
@@ -170,13 +170,13 @@ docs are read once per page load for all three ([`load` in iamCatalog.ts](../ui/
 The snapshot ([iamSnapshot.json](../ui/app/iamSnapshot.json)) was captured on 2026-10-24 from the reference
 updated 2026-10-08 (global conditions page updated 2026-10-20): 43 services, 228 permissions, 53 condition keys,
 8 global conditions. The "changed" diff compares, per permission present in both, the set of
-`<key> [sorted operators]` strings ([`diffCatalogs`](../ui/app/iamCatalog.ts#L186)).
+`<key> [sorted operators]` strings ([`diffCatalogs`](../ui/app/iamCatalog.ts)).
 
 Wherever the tab shows the source in messages, it says `live docs` or `snapshot of 2026-10-24`.
 
 ### Name and options
 
-Card "Name and options" ([`NameCard`](../ui/app/tabs/IamPolicyTab.tsx#L242)):
+Card "Name and options" ([`NameCard`](../ui/app/tabs/IamPolicyTab.tsx)):
 
 | Control | Behaviour |
 | --- | --- |
@@ -189,7 +189,7 @@ Card "Name and options" ([`NameCard`](../ui/app/tabs/IamPolicyTab.tsx#L242)):
 ### Step buttons
 
 A toggle group switches the visible step; the current step is stored in the draft. Labels
-([`StepNav`](../ui/app/tabs/IamPolicyTab.tsx#L288)):
+([`StepNav`](../ui/app/tabs/IamPolicyTab.tsx)):
 
 - `1 · Apps`, with `(all)` when *Let the group open every app* is on, else `(N)` selected apps.
 - `2 · Data access`, with `(included of needed)` data permissions once selected apps request Grail data, and ` ⚠`
@@ -198,7 +198,7 @@ A toggle group switches the visible step; the current step is stored in the draf
 
 ### Step 1: Apps
 
-Card "Step 1 · Apps" ([`AppsStep`](../ui/app/tabs/IamPolicyTab.tsx#L312)). The hint text explains that each app is
+Card "Step 1 · Apps" ([`AppsStep`](../ui/app/tabs/IamPolicyTab.tsx)). The hint text explains that each app is
 granted on its own `app-engine:apps:run` line (with a *docs* link to that permission) followed by the permissions
 it requests for the chosen levels, and that the warning icon marks apps that show Grail data.
 
@@ -209,7 +209,7 @@ it requests for the chosen levels, and that the warning icon marks apps that sho
 - Counter: "N of M apps", or "Reading installed apps…" while loading.
 - **App grid**: one card per app, sorted by name, `minmax(156px, 1fr)` columns, scrolls after 640 px.
 
-**App card** ([`AppCard`](../ui/app/tabs/IamPolicyTab.tsx#L415)):
+**App card** ([`AppCard`](../ui/app/tabs/IamPolicyTab.tsx)):
 
 - The registry icon (32 px), loaded only when the card scrolls into view (200 px margin), at most 6 icons at a
   time; without an icon (or if it fails) the first letter of the name on a grey square. Hover shows the app ID.
@@ -234,13 +234,13 @@ Below the grid:
 - **Limit app state and app settings permissions to the selected apps (shared:app-id)**: on by default; adds
   `WHERE shared:app-id IN (…)` (or `=` for one app) to `state:*`, `state-management:*` and `app-settings:*` lines.
 
-**Selected apps (N)** ([`SelectedApps`](../ui/app/tabs/IamPolicyTab.tsx#L544)), sorted by name. Each row: app name,
+**Selected apps (N)** ([`SelectedApps`](../ui/app/tabs/IamPolicyTab.tsx)), sorted by name. Each row: app name,
 levels (or "Open only"), "N permissions" (level permissions plus app state permissions, minus the ones you
 unticked), "N data permissions (step 2)" when Read is chosen and the app reads Grail data, "N left out" for skipped
 scopes. **Customize** opens the permission list; **Remove** deselects the app. An app ID that is not installed
 (for example loaded from text) shows "<id>: not installed in this environment (opened with its app ID only)."
 
-The **Customize** list ([`AppPermissionList`](../ui/app/tabs/IamPolicyTab.tsx#L597)) groups the manifest scopes,
+The **Customize** list ([`AppPermissionList`](../ui/app/tabs/IamPolicyTab.tsx)) groups the manifest scopes,
 each with the manifest's comment, as checkboxes (untick to leave a permission out; stored per app in
 `appExclude`):
 
@@ -255,7 +255,7 @@ grant yet (logs, metrics). Add it in step 2." **Next: Data access →** goes to 
 
 ### Step 2: Data access
 
-Card "Step 2 · Data access" ([`DataStep`](../ui/app/tabs/IamPolicyTab.tsx#L633)).
+Card "Step 2 · Data access" ([`DataStep`](../ui/app/tabs/IamPolicyTab.tsx)).
 
 - While apps load: "Reading the installed apps…".
 - No selected app with Read requests Grail data: "None of the selected apps with Read requests Grail data.
@@ -277,7 +277,7 @@ Card "Step 2 · Data access" ([`DataStep`](../ui/app/tabs/IamPolicyTab.tsx#L633)
 
 ### Limit the records (dimensional data)
 
-Card "Limit the records (dimensional data)" ([`DimensionsCard`](../ui/app/tabs/IamPolicyTab.tsx#L711)), shown in
+Card "Limit the records (dimensional data)" ([`DimensionsCard`](../ui/app/tabs/IamPolicyTab.tsx)), shown in
 step 2. Each dimension applies to every included data permission (and `storage:buckets:read` when added) and to
 step 3 permissions with *Apply dimensional data* on, as long as the permission has a condition with that attribute.
 
@@ -305,7 +305,7 @@ step 3 permissions with *Apply dimensional data* on, as long as the permission h
 | Metric key | `metric.key` | `storage:metric.key` | same |
 | Entity type | `entity.type` | `storage:entity.type` | `=`, `IN`, `startsWith` |
 
-A section label shows the current setting, e.g. `MATCH ("team-a")`. Inside ([`DimensionEditor`](../ui/app/tabs/IamPolicyTab.tsx#L749)):
+A section label shows the current setting, e.g. `MATCH ("team-a")`. Inside ([`DimensionEditor`](../ui/app/tabs/IamPolicyTab.tsx)):
 
 - **Operator**: the operators at least one affected permission accepts (all of the dimension's operators when no
   permission is affected yet). The default is `IN` when offered, else the first.
@@ -321,10 +321,10 @@ A section label shows the current setting, e.g. `MATCH ("team-a")`. Inside ([`Di
 
 ### Step 3: Fine-tune permissions
 
-Card "Step 3 · Fine-tune permissions" ([`PermissionsCard`](../ui/app/tabs/IamPolicyTab.tsx#L796)): optional
+Card "Step 3 · Fine-tune permissions" ([`PermissionsCard`](../ui/app/tabs/IamPolicyTab.tsx)): optional
 individual permissions on top of what the apps need. "No individual permission added." when empty.
 
-**Permission row** ([`PermissionRowEditor`](../ui/app/tabs/IamPolicyTab.tsx#L860)):
+**Permission row** ([`PermissionRowEditor`](../ui/app/tabs/IamPolicyTab.tsx)):
 
 - The permission ID with a *docs* link, or "not in the IAM policy reference" (orange) for unknown IDs; below it the
   service title and description.
@@ -350,7 +350,7 @@ storage:buckets:read for the buckets that hold the data (logs, spans)." with **A
 row has `storage:table-name = "<table>"` (or `IN (…)` for several), or no condition when a Grail bucket dimension
 is set (it then receives the bucket names through *Apply dimensional data*).
 
-**Add permissions** ([`PermissionBrowser`](../ui/app/tabs/IamPolicyTab.tsx#L971)): a search box ("Search 228
+**Add permissions** ([`PermissionBrowser`](../ui/app/tabs/IamPolicyTab.tsx)): a search box ("Search 228
 permissions, e.g. logs, settings, workflows") matching permission ID, description or service title, and "N
 selected". An accordion per service ("`storage` Grail · 39 · 2 selected"); while searching, every matching service
 opens and shows "k of n". Inside: the service notes from the docs, a link "<service> in the IAM policy reference",
@@ -362,7 +362,7 @@ permission matches “…”. If it is new, type it in the editor; it is flagged
 
 ### Global conditions
 
-Card "Global conditions" ([`GlobalsCard`](../ui/app/tabs/IamPolicyTab.tsx#L1049)), shown in step 3: "Added to every
+Card "Global conditions" ([`GlobalsCard`](../ui/app/tabs/IamPolicyTab.tsx)), shown in step 3: "Added to every
 statement (AND): environment, user, group, date and time. Use > and < together for a time window.", with links to
 Policy global conditions and Policy templating. **Add global condition** lists the 8 documented global conditions
 with the start of their description. Operators: the documented ones, or `=` when the docs list none.
@@ -383,7 +383,7 @@ The environment and user suggestions come from `getEnvironmentId()` and `getCurr
 
 ### Condition rows and value pickers
 
-`ConditionRow` and `ValuePicker` ([IamShared.tsx](../ui/app/tabs/IamShared.tsx#L198)) are used by step 3 rows,
+`ConditionRow` and `ValuePicker` ([IamShared.tsx](../ui/app/tabs/IamShared.tsx)) are used by step 3 rows,
 global conditions and the dimension editors.
 
 - **Operator select**: the supported operators in the order `=`, `!=`, `IN`, `NOT IN`, `startsWith`,
@@ -413,7 +413,7 @@ Where each key's suggestions come from is listed under [Queries](#queries) and [
 
 ### Policy editor (right pane)
 
-`EditorPane` ([IamShared.tsx](../ui/app/tabs/IamShared.tsx#L455)), title "Policy":
+`EditorPane` ([IamShared.tsx](../ui/app/tabs/IamShared.tsx)), title "Policy":
 
 - Header counter: "N of 100 statements · N errors · N warnings" (errors red and warnings amber when non-zero). N
   counts every text segment that starts with ALLOW or DENY, including ones with errors.
@@ -456,7 +456,7 @@ page load only. The Permissions Test tab's *Policy Creator draft* mode tests thi
 
 ## Policy text the app writes
 
-Generated by [`policyBlocks` and `renderPolicy`](../ui/app/iamPolicy.ts#L176).
+Generated by [`policyBlocks` and `renderPolicy`](../ui/app/iamPolicy.ts).
 
 ### Grammar
 
@@ -499,7 +499,7 @@ by a block `App permissions` with `// Reading the permissions the selected apps 
 
 ### How app scopes become permissions
 
-[`summarizeApp`](../ui/app/iamApps.ts#L55) sorts every scope in an app's manifest (deduplicated):
+[`summarizeApp`](../ui/app/iamApps.ts) sorts every scope in an app's manifest (deduplicated):
 
 | Scope | Kind | Where it goes |
 | --- | --- | --- |
@@ -509,7 +509,7 @@ by a block `App permissions` with `// Reading the permissions the selected apps 
 | `storage:` with a condition on a dimension attribute | data | Step 2 (only with Read). `storage:buckets:read` itself is not listed; it is added for the included tables. Optional when the manifest comment contains "optional" (any case) or the scope is `storage:fieldsets:read`. |
 | Anything else | app | Read / Write / Execute block by the action (last segment). |
 
-Action to level ([`levelOf`](../ui/app/iamApps.ts#L29)):
+Action to level ([`levelOf`](../ui/app/iamApps.ts)):
 
 - **Read:** `read`, `list`, `lookup`, `download`, `load`, `resolve`.
 - **Execute:** `execute`, `run`, `use`, `send`, `authenticate`, `invoke`, `validate`, `connect`, `set`.
@@ -519,10 +519,10 @@ An app offers Write / Execute only when it has app-kind permissions at that leve
 
 ### How dimensions become conditions
 
-[`dimensionConditions`](../ui/app/iamPolicy.ts#L126): for each dimension with a value, every condition of the
+[`dimensionConditions`](../ui/app/iamPolicy.ts): for each dimension with a value, every condition of the
 permission whose attribute (key without the `service:` prefix) equals the dimension attribute gets the dimension's
 operator and values. A permission without that attribute gets nothing for that dimension (it stays unrestricted
-for it). When the permission does not support the operator, [`adaptOperator`](../ui/app/iamPolicy.ts#L115) picks
+for it). When the permission does not support the operator, [`adaptOperator`](../ui/app/iamPolicy.ts) picks
 an equivalent:
 
 | Chosen | Values | Written as |
@@ -705,7 +705,7 @@ ALLOW storage:buckets:read WHERE storage:table-name IN ("logs", "metrics");
 
 ### What the parser accepts when you type or paste
 
-[`parsePolicy`](../ui/app/iamPolicy.ts#L438) reads any text, not only what the builder writes:
+[`parsePolicy`](../ui/app/iamPolicy.ts) reads any text, not only what the builder writes:
 
 - `//` comments to the end of the line are ignored (outside quotes).
 - Statements are separated by `;` outside quotes and parentheses; line breaks are free.
@@ -718,7 +718,7 @@ ALLOW storage:buckets:read WHERE storage:table-name IN ("logs", "metrics");
 
 ### Load this text into the builder
 
-[`draftFromPolicyText`](../ui/app/iamPolicy.ts#L668), used by **Load this text into the builder** and by the docs
+[`draftFromPolicyText`](../ui/app/iamPolicy.ts), used by **Load this text into the builder** and by the docs
 patterns:
 
 1. The text is parsed. Statements with a syntax error (a parse error inside them) are left out and listed in the
@@ -749,7 +749,7 @@ the fourth statement (unquoted value) listed as left out.
 
 ### Docs patterns
 
-[`POLICY_TEMPLATES`](../ui/app/iamPolicy.ts#L726), statements copied from the docs pages they cite; all six
+[`POLICY_TEMPLATES`](../ui/app/iamPolicy.ts), statements copied from the docs pages they cite; all six
 validate without diagnostics:
 
 | Pattern | Docs page | Text |
@@ -780,8 +780,8 @@ ALLOW storage:smartscape:read;
 ## Checks and scoring
 
 The tab has no gauges or coverage scores. Its checks are the editor diagnostics below, which run on the editor text
-on every change ([`validatePolicy`](../ui/app/iamPolicy.ts#L511) plus `appDiagnostics` in
-[IamPolicyTab.tsx](../ui/app/tabs/IamPolicyTab.tsx#L79)), and the AI Assist rules.
+on every change ([`validatePolicy`](../ui/app/iamPolicy.ts) plus `appDiagnostics` in
+[IamPolicyTab.tsx](../ui/app/tabs/IamPolicyTab.tsx)), and the AI Assist rules.
 
 ### Editor validation rules
 
@@ -820,7 +820,7 @@ on every change ([`validatePolicy`](../ui/app/iamPolicy.ts#L511) plus `appDiagno
 | info | Grail table permission and no `storage:buckets:read` anywhere | Grail table permissions also need storage:buckets:read for the buckets that hold the data. |
 | warning | A selected app with Read misses required data (on its `app-engine:apps:run` line, else line 1) | `<App>` shows Grail data this policy does not grant (logs, entities); add it in step 2, Data access. |
 
-Grail tables recognised ([`grailTableOf`](../ui/app/iamCatalog.ts#L158)): `logs`, `events`, `metrics`, `spans`,
+Grail tables recognised ([`grailTableOf`](../ui/app/iamCatalog.ts)): `logs`, `events`, `metrics`, `spans`,
 `bizevents`, `security.events`, `user.events`, `user.sessions`, `user.replays`, `application.snapshots`, and
 `storage:system:read` → `dt.system.events`. `storage:entities:read` and `storage:smartscape:read` have no buckets.
 
@@ -830,7 +830,7 @@ conditions; hand-added grants count.
 ## Queries
 
 All queries are value suggestions; none feeds a score. Each runs only when its picker is opened (or its *Values
-query* toggle is used), through `useDqlWhen` ([useDql.ts](../ui/app/useDql.ts#L18)); after that it re-runs when
+query* toggle is used), through `useDqlWhen` ([useDql.ts](../ui/app/useDql.ts)); after that it re-runs when
 the timeframe changes, because the text changes. The app timeframe (24 hours default, 7 days, 30 days) sets
 `from:`; logs and spans use `samplingRatio:10000` for 24 h and `100000` for 7 and 30 days; every `fetch` on logs,
 spans and events is capped at 5 GB (`scanLimitGBytes:5`); the `metrics` command reads at most 10 days, so 30 d
@@ -862,8 +862,8 @@ value format and that the suggestions are entity IDs.
 
 ### 1. Field values
 
-- **Source:** `iamFieldValuesQuery(tf, field)` in [queries.ts](../ui/app/queries.ts#L1324); mapping in
-  [`valueInfo`](../ui/app/iamValues.ts#L58).
+- **Source:** `iamFieldValuesQuery(tf, field)` in [queries.ts](../ui/app/queries.ts); mapping in
+  [`valueInfo`](../ui/app/iamValues.ts).
 - **Runs:** when the picker for one of the keys above opens; re-runs on timeframe change.
 - **Parameters:** `field` (the attribute, in backticks), timeframe. Query title `IAM values: <field>`.
 - **Query** (24 h, `dt.security_context`):
@@ -909,7 +909,7 @@ smartscapeNodes "*", from:now()-24h
 
 ### 2. Event field values
 
-- **Source:** `iamEventFieldValuesQuery(tf, field)` in [queries.ts](../ui/app/queries.ts#L1338). Title
+- **Source:** `iamEventFieldValuesQuery(tf, field)` in [queries.ts](../ui/app/queries.ts). Title
   `IAM values: <field>`; `openpipeline:event-type` uses `event.type`, `openpipeline:event-provider` uses
   `event.provider`.
 - **Query** (24 h, `event.type`):
@@ -1046,7 +1046,7 @@ smartscapeNodes "ACTIVEGATE", from:now()-24h
 
   7 d / 30 d change `from:`. **Output:** `value`. **Open it yourself:** *Values query*.
 
-**Client-side processing of every DQL suggestion** ([`useConditionValues`](../ui/app/iamValues.ts#L222)): rows
+**Client-side processing of every DQL suggestion** ([`useConditionValues`](../ui/app/iamValues.ts)): rows
 with an empty `value` are dropped; `label` and `table` / `sources` become label and detail.
 
 ## API calls
@@ -1115,8 +1115,8 @@ You can still copy or export the text and create the policy in Account Managemen
 
 ## AI Assist on this page
 
-[`analyzeIamPolicy`](../ui/app/analyses.ts#L730) is rule-based and runs locally in the browser, only while the panel
-is open. Its input ([`policyInsight`](../ui/app/tabs/IamPolicyTab.tsx#L201)) reads the editor text as parsed, so
+[`analyzeIamPolicy`](../ui/app/analyses.ts) is rule-based and runs locally in the browser, only while the panel
+is open. Its input ([`policyInsight`](../ui/app/tabs/IamPolicyTab.tsx)) reads the editor text as parsed, so
 hand edits count, plus the draft's apps and dimensions:
 
 | Input | Computed as |
@@ -1174,7 +1174,8 @@ hand-edited.
 | Use MATCH for dt.security_context (e.g. MATCH ("TeamA")) if any data source sets several security contexts on a record. | medium | securityContextWithoutMatch |
 | Replace DENY statements with narrower ALLOW statements where possible … | medium | any DENY rule |
 | If several teams need the same permissions for different data, write the permissions once and move the data scope into one boundary per team, or use ${bindParam:…} templating. | low | dims set and no binding parameters |
-| Copy the text into Account Management > Identity & access management > Policy management > Create policy; it is validated again on save. | low | always |
+| An admin of this app can send the policy with Create in Account Management below the editor (the API validates it first; choose this environment or the whole account), or copy it into Account Management > Identity & access management > Policy management. It grants nothing until it is bound to a group. | low | always, when there are no errors |
+| Once the errors are fixed, an admin of this app can send the policy with Create in Account Management below the editor (the API validates it first), or copy it into Account Management > Identity & access management > Policy management. Then bind it to a group. | low | always, when there are errors |
 
 ## Limitations and edge cases
 
@@ -1240,8 +1241,8 @@ hand-edited.
 | [ui/app/iamValues.ts](../ui/app/iamValues.ts) | Value sources per condition key, API loaders, `useConditionValues` |
 | [ui/app/iamDrafts.tsx](../ui/app/iamDrafts.tsx) | Drafts above the tabs and in localStorage |
 | [ui/app/iamSnapshot.json](../ui/app/iamSnapshot.json) | Bundled catalogue (2026-10-24) |
-| [ui/app/queries.ts](../ui/app/queries.ts#L1312) | Value suggestion queries |
+| [ui/app/queries.ts](../ui/app/queries.ts) | Value suggestion queries |
 | [api/iam-reference.function.ts](../api/iam-reference.function.ts), [api/iam-reference-parser.ts](../api/iam-reference-parser.ts) | Live docs read and parser |
 | [scripts/sync-iam-reference.mjs](../scripts/sync-iam-reference.mjs) | `npm run sync-iam` (list differences, exit 1 if any) / `-- --write` (refresh the snapshot) |
-| [ui/app/analyses.ts](../ui/app/analyses.ts#L702) | `analyzeIamPolicy` |
+| [ui/app/analyses.ts](../ui/app/analyses.ts) | `analyzeIamPolicy` |
 | [ui/app/segments.ts](../ui/app/segments.ts), [ui/app/databases.ts](../ui/app/databases.ts) | `listManagementZones`, `listExtensions` used by the pickers |
