@@ -1,0 +1,32 @@
+{
+  "$schema": "./.dt-app/app.config.schema.json",
+  "environmentUrl": "https://chg74771.sprint.apps.dynatracelabs.com",
+  "app": {
+    "name": "IAM Assistant",
+    "version": "0.1.1",
+    "description": "Overview of IAM groups and users; build and test IAM policies and boundaries.",
+    "id": "my.iam.assistant",
+    "icon": "./assets/icon.png",
+    "scopes": [
+      { "name": "storage:smartscape:read", "comment": "IAM tabs: condition value suggestions (Smartscape node fields, process groups, ActiveGate groups)" },
+      { "name": "storage:metrics:read", "comment": "IAM tabs: condition value suggestions (metric keys and dimensions)" },
+      { "name": "storage:logs:read", "comment": "IAM tabs: condition value suggestions (sampled logs); Permissions Test: readable records preview" },
+      { "name": "storage:events:read", "comment": "IAM tabs: condition value suggestions (event.kind / event.type / event.provider)" },
+      { "name": "storage:bizevents:read", "comment": "IAM tabs: condition value suggestions (business events)" },
+      { "name": "storage:spans:read", "comment": "IAM tabs: condition value suggestions (sampled spans); Permissions Test: readable records preview" },
+      { "name": "storage:buckets:read", "comment": "IAM tabs: read the Grail buckets behind the value suggestion queries" },
+      { "name": "storage:bucket-definitions:read", "comment": "IAM tabs: list Grail buckets and their tables (dt.system.buckets), for storage:bucket-name / storage:table-name values" },
+      { "name": "storage:entities:read", "comment": "IAM tabs: classic entity IDs and names (process groups, hosts, host groups) for condition values" },
+      { "name": "storage:system:read", "comment": "IAM tabs: entity types (dt.system.data_objects) and system events for condition values" },
+      { "name": "settings:objects:read", "comment": "IAM tabs: management zone names for environment:management-zone values" },
+      { "name": "settings:schemas:read", "comment": "IAM tabs: list settings schemas and read a schema definition (schema groups), for settings:schemaId / settings:schemaGroup values" },
+      { "name": "extensions:definitions:read", "comment": "IAM tabs: extension names for extensions:extension-name values" },
+      { "name": "app-engine:apps:run", "comment": "IAM tabs: list installed apps and the scopes their manifests request (App Registry), for shared:app-id values" },
+      { "name": "iam:users:read", "comment": "Permissions Test: find users by name or email (environment IAM API)" },
+      { "name": "iam:groups:read", "comment": "Permissions Test: find groups by name (environment IAM API)" },
+      { "name": "app-settings:objects:read", "comment": "App credentials: the app functions read the app-credentials settings object (the secret comes back in plain text only to the app's functions); the UI shows whether it is set" },
+      { "name": "app-settings:objects:write", "comment": "App credentials: admins store the account OAuth client in the app-credentials settings object; also checked (effective permissions) to decide who may change it" }
+    ],
+    "functionSandbox": {}
+  }
+}
