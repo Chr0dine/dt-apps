@@ -4,8 +4,7 @@ import { Heading, Text } from "@dynatrace/strato-components/typography";
 import { Button } from "@dynatrace/strato-components/buttons";
 import { DataTable, type DataTableColumnDef } from "@dynatrace/strato-components/tables";
 import { MessageContainer } from "@dynatrace/strato-components/content";
-import { Checkbox, PasswordInput, Select, TextInput } from "@dynatrace/strato-components/forms";
-import { CheckmarkIcon } from "@dynatrace/strato-icons";
+import { Checkbox, Select, TextInput } from "@dynatrace/strato-components/forms";
 import Colors from "@dynatrace/strato-design-tokens/colors";
 import Spacings from "@dynatrace/strato-design-tokens/spacings";
 import Borders from "@dynatrace/strato-design-tokens/borders";
@@ -13,19 +12,14 @@ import { useAIInsights } from "../AIInsights";
 import { analyzeProblemNotifications } from "../analyses";
 import { GAUGE_SIZE, PctGauge, QueryActions, ScoreTile, ShowEntitiesButton, num, pct } from "../components";
 import { Field, Links, ManualActionView, Request } from "../RemediationPanel";
-import type { SubmitResult } from "../remediation";
 import { useDql } from "../useDql";
 import { PROBLEM_DAYS, profileProblemsQuery } from "../queries";
 import { Donut, type Slice } from "./ModePie";
-import { DocLink, DocLinks } from "./IamShared";
+import { AppCredentialsCard } from "./AppCredentials";
 import { profileStatus, type DelayTiming, type Note } from "../alertingProfiles";
 import {
   NOTIFICATION_TYPES,
-  PLATFORM_TOKENS_URL,
   PN_DOCS,
-  WORKFLOW_CREDENTIAL,
-  WORKFLOW_TOKEN_DOCS,
-  WORKFLOW_TOKEN_SCOPES,
   convertible,
   createWorkflows,
   eventNames,
@@ -37,7 +31,6 @@ import {
   planMigrations,
   previewTrigger,
   readWorkflowTokenStatus,
-  storeWorkflowToken,
   typeLabel,
   workflowLink,
   type MigrationResult,
@@ -309,101 +302,6 @@ async function inBatches<T, R>(items: T[], limit: number, fn: (t: T) => Promise<
 
 const requestText = (p: WorkflowPlan) => `// POST /platform/automation/v1/workflows\n${JSON.stringify(p.body, null, 2)}`;
 
-// --- Platform token -----------------------------------------------------------------
-const chip: React.CSSProperties = { fontFamily: "monospace", fontSize: 12, padding: "1px 4px", borderRadius: 4, background: "rgba(128,128,128,0.14)", whiteSpace: "nowrap" };
-const panel: React.CSSProperties = { padding: "10px 12px", borderRadius: 6, border: "1px solid rgba(128,128,128,0.3)" };
-
-/** The platform token the `workflows` app function creates workflows with (custom apps cannot hold automation:workflows:write). */
-function WorkflowTokenCard({ status, onSaved }: { status: WorkflowTokenStatus | null; onSaved: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [token, setToken] = useState("");
-  const [ownerOnly, setOwnerOnly] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<SubmitResult | null>(null);
-  const showForm = open || (status !== null && status.state !== "ok");
-  const save = () => {
-    setSaving(true);
-    void storeWorkflowToken(token, ownerOnly).then((r) => {
-      setSaving(false);
-      setMsg(r);
-      if (r.ok) {
-        setToken("");
-        setOpen(false);
-        onSaved();
-      }
-    });
-  };
-  return (
-    <div style={panel}>
-      <Flex justifyContent="space-between" alignItems="baseline" flexWrap="wrap" gap={8}>
-        <Text style={{ fontWeight: 600 }}>Platform token for creating workflows</Text>
-        {status?.state === "ok" && (
-          <Button size="condensed" onClick={() => setOpen((v) => !v)}>
-            {open ? "Cancel" : "Change token"}
-          </Button>
-        )}
-      </Flex>
-      {status === null ? (
-        <Text style={{ ...hint, display: "block", marginTop: 4 }}>Checking the platform token…</Text>
-      ) : status.state === "ok" ? (
-        <Text style={{ display: "block", fontSize: 13, marginTop: 4 }}>
-          <CheckmarkIcon style={{ width: 14, height: 14, verticalAlign: "-2px", color: Colors.Text.Success.Default }} /> Workflows are created with the platform token in
-          credential <span style={chip}>{WORKFLOW_CREDENTIAL}</span> and are owned by the token&apos;s user
-          {status.owner ? ` (credential owner ${status.owner}` : " ("}
-          {status.ownerAccessOnly ? ", owner only: other users of this app cannot create them)." : ", shared: every user of this app can create them)."}
-        </Text>
-      ) : (
-        <div style={{ marginTop: 6 }}>
-          <MessageContainer variant={status.state === "missing" ? "neutral" : "warning"}>
-            <MessageContainer.Description>
-              <span>
-                {status.state === "missing"
-                  ? "Apps not provided by Dynatrace cannot hold the automation:workflows:write scope, so this app creates the workflows through its workflows function with a platform token. Store one below."
-                  : `The stored platform token does not work: ${status.message}`}
-              </span>
-            </MessageContainer.Description>
-          </MessageContainer>
-        </div>
-      )}
-      {showForm && (
-        <div style={{ marginTop: 10 }}>
-          <ol style={{ margin: "0 0 8px", paddingLeft: 18, fontSize: 12, lineHeight: "18px" }}>
-            <li>
-              In <DocLink href={PLATFORM_TOKENS_URL}>My platform tokens</DocLink> (Account Management), create a token for this environment with{" "}
-              {WORKFLOW_TOKEN_SCOPES.map((s, i) => (
-                <React.Fragment key={s}>
-                  {i > 0 && " and "}
-                  <span style={chip}>{s}</span>
-                </React.Fragment>
-              ))}
-              . It only works within its user&apos;s permissions; generate it for a service user so the workflows keep running when people leave.
-            </li>
-            <li>Save it here: it is stored in the credential vault as a Token credential (App Engine scope) and read only by this app&apos;s workflows function.</li>
-          </ol>
-          <label style={{ display: "block", maxWidth: 520 }}>
-            <Text style={{ ...hint, display: "block", marginBottom: 4 }}>Platform token</Text>
-            <PasswordInput value={token} onChange={(v: string) => setToken(v)} placeholder="dt0s16.ABCD1234.…" aria-label="Platform token" />
-          </label>
-          <div style={{ marginTop: 8 }}>
-            <Checkbox value={ownerOnly} onChange={(v: boolean) => setOwnerOnly(v)}>
-              <span>Only I can use it (owner only). Off: every user of this app can create these workflows, owned by the token&apos;s user.</span>
-            </Checkbox>
-          </div>
-          <Flex gap={8} alignItems="center" style={{ marginTop: 8 }}>
-            <Button variant="emphasized" onClick={save} disabled={saving || !token.trim()}>
-              {saving ? "Saving…" : "Save to the credential vault"}
-            </Button>
-          </Flex>
-          <div style={{ marginTop: 8 }}>
-            <DocLinks title="Setup documentation" docs={WORKFLOW_TOKEN_DOCS} />
-          </div>
-        </div>
-      )}
-      {msg && <Text style={{ display: "block", marginTop: 6, fontSize: 12, color: msg.ok ? Colors.Text.Success.Default : Colors.Text.Critical.Default }}>{msg.message}</Text>}
-    </div>
-  );
-}
-
 function MigrateForm({ rows, reload }: { rows: NotificationRow[]; reload: () => void }) {
   const [scope, setScope] = useState<Scope>("missing");
   const [type, setType] = useState("any");
@@ -636,7 +534,7 @@ function MigrateForm({ rows, reload }: { rows: NotificationRow[]; reload: () => 
           </Checkbox>
           {toRun.length > 0 ? (
             <>
-              <WorkflowTokenCard status={token} onSaved={() => setTokenTick((t) => t + 1)} />
+              <AppCredentialsCard use="workflows" onChanged={() => setTokenTick((t) => t + 1)} />
               <Checkbox value={confirm} onChange={(v: boolean) => setConfirm(v)}>
                 Create {toRun.length} {plural(toRun.length, "workflow")} (1 API call each, with the platform token). They are active right away, so matching problems
                 notify through the classic notification and the workflow until you disable the classic one.

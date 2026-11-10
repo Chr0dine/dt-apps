@@ -1,5 +1,6 @@
 import { credentialVaultClient } from "@dynatrace-sdk/client-classic-environment-v2";
 import { getEnvironmentUrl } from "@dynatrace-sdk/app-environment";
+import { readAppCredentials } from "./app-credentials";
 
 // User tag rules ("Capturing > User tags" on a web application) are only exposed by the classic Config API v1
 // (GET /api/config/v1/applications/web/{id} -> userTags). The platform has no proxy or SDK client for it, so this
@@ -27,12 +28,13 @@ function classicUrl(): string {
 export default async function (payload: Payload = {}): Promise<UserTagsResult> {
   const appIds = (payload.appIds ?? []).filter((id) => /^APPLICATION-[0-9A-F]+$/.test(id)).slice(0, MAX_APPS);
 
-  let token: string | undefined;
-  try {
+  // App settings first (an admin stores or creates the token once; users never see it), then the credential vault.
+  let token: string | undefined = (await readAppCredentials()).creds.readConfigToken || undefined;
+  if (!token) try {
     const list = await credentialVaultClient.listCredentials({ name: `"${CREDENTIAL_NAME}"`, type: "TOKEN" });
     const cred = (list.credentials ?? []).find((c) => c.name === CREDENTIAL_NAME) ?? list.credentials?.[0];
     if (!cred?.id) {
-      return { status: "no-credential", message: `No Token credential named "${CREDENTIAL_NAME}" found in the credential vault.` };
+      return { status: "no-credential", message: `No ReadConfig token in the app settings, and no Token credential named "${CREDENTIAL_NAME}" in the credential vault.` };
     }
     const details = (await credentialVaultClient.getCredentialsDetails({ id: cred.id })) as { token?: string };
     token = details.token;

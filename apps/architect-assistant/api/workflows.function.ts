@@ -1,5 +1,6 @@
 import { credentialVaultClient } from "@dynatrace-sdk/client-classic-environment-v2";
 import { getEnvironmentUrl } from "@dynatrace-sdk/app-environment";
+import { readAppCredentials } from "./app-credentials";
 
 // Creates the Problem notifications tab's migration workflows. Only apps provided by Dynatrace may request the
 // automation:workflows:write scope (installing a custom app that asks for it fails with HTTP 400), so this function
@@ -31,10 +32,13 @@ export type WorkflowsResult =
 type Token = { token: string; owner: string; ownerAccessOnly: boolean };
 
 async function readToken(): Promise<Token | { error: string }> {
+  // App settings first: an admin generates or stores the token once and users of the app never see it.
+  const { creds } = await readAppCredentials();
+  if (creds.workflowsToken) return { token: creds.workflowsToken, owner: creds.workflowsTokenInfo, ownerAccessOnly: false };
   try {
     const list = await credentialVaultClient.listCredentials({ name: `"${CREDENTIAL_NAME}"`, type: "TOKEN" });
     const cred = (list.credentials ?? []).find((c) => c.name === CREDENTIAL_NAME);
-    if (!cred?.id) return { error: `No Token credential named "${CREDENTIAL_NAME}" found in the credential vault (or it is owner-only and owned by someone else).` };
+    if (!cred?.id) return { error: `No platform token in the app settings, and no Token credential named "${CREDENTIAL_NAME}" in the credential vault.` };
     const details = (await credentialVaultClient.getCredentialsDetails({ id: cred.id })) as { token?: string; owner?: string; ownerAccessOnly?: boolean };
     if (!details.token) return { error: `Credential "${CREDENTIAL_NAME}" has no token value.` };
     return { token: details.token, owner: details.owner ?? "", ownerAccessOnly: !!details.ownerAccessOnly };

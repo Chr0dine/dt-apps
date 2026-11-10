@@ -1,21 +1,21 @@
 import { credentialVaultClient } from "@dynatrace-sdk/client-classic-environment-v2";
+import { ApiError, accountClient, accountToken, callerCanManage, readAppCredentials, type AccountClient } from "./app-credentials";
 
 // Policies that apply to a user or a group, for the Permissions Test tab. Group membership, policy bindings, policies and
 // boundaries are only exposed by the account-level Account Management API (https://api.dynatrace.com), which takes an
 // OAuth client of the account; the environment's /platform/iam/v1 API only finds users and groups by name. The browser
 // cannot call it (no CORS, no account token), hence this function.
 // Setup: create an OAuth client in Account Management (Identity & access management > OAuth clients) with
-// account-idm-read and either iam:bindings:read + iam:policies:read + iam:boundaries:read or iam-policies-management, and
-// store it in the credential vault as a "User and password" credential named CREDENTIAL_NAME (user = client ID,
-// password = client secret, "App Engine" scope) with the account UUID in its description. The tab's setup form does
-// that. sso.dynatrace.com and api.dynatrace.com must be in builtin:dt-javascript-runtime.allowed-outbound-connections
-// when that allowlist is enforced.
+// account-idm-read and either iam:bindings:read + iam:policies:read + iam:boundaries:read or iam-policies-management. An
+// admin of this app stores it in the app settings (app-credentials.ts: secrets readable only by this app's functions);
+// the credential vault entry CREDENTIAL_NAME of earlier versions still works as a fallback. Unless the admin allows it
+// for every user, only the app's admins can run the test. sso.dynatrace.com and api.dynatrace.com must be in
+// builtin:dt-javascript-runtime.allowed-outbound-connections when that allowlist is enforced.
 // Calls per run: 1 token (cached for its lifetime), 1 user (or nothing for a group), 2 binding lists (account and this
 // environment), 1 policy overview (policies/aggregate, inherited levels included), 1 GET per bound policy and per
 // boundary, 6 at a time.
 
 const CREDENTIAL_NAME = "architect-assistant-account-api";
-const SSO = "https://sso.dynatrace.com/sso/oauth2/token";
 const API = "https://api.dynatrace.com";
 /** Read-only scopes first; clients created before the fine-grained IAM scopes have iam-policies-management instead. */
 const SCOPE_SETS = ["account-idm-read iam:bindings:read iam:policies:read iam:boundaries:read", "account-idm-read iam-policies-management"];
@@ -47,53 +47,29 @@ export type IamAccessResult =
       warnings: string[];
     }
   | { status: "ok-search"; results: { id: string; name: string; email?: string; detail?: string }[]; total: number }
-  | { status: "ok-status"; accountUuid: string; scopes: string; owner: string; ownerAccessOnly: boolean }
-  | { status: "no-credential" | "unauthorized" | "blocked" | "not-found" | "error"; message: string };
+  | { status: "ok-status"; accountUuid: string; scopes: string; owner: string; ownerAccessOnly: boolean; source: "app-settings" | "credential-vault"; forAllUsers: boolean }
+  | { status: "no-credential" | "unauthorized" | "forbidden" | "blocked" | "not-found" | "error"; message: string };
 
-class ApiError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-  ) {
-    super(message);
-  }
-}
+type Creds = AccountClient & { source: "app-settings" | "credential-vault"; owner: string; ownerAccessOnly: boolean; forAllUsers: boolean };
 
-type Creds = { clientId: string; clientSecret: string; accountUuid: string; owner: string; ownerAccessOnly: boolean };
+/** The account OAuth client: the app settings object first (admins store it once; users never see it), else the credential vault entry of earlier versions. */
 async function readCredential(accountOverride?: string): Promise<Creds | { error: string }> {
+  const { creds, error } = await readAppCredentials();
+  const fromSettings = accountClient(creds);
+  if (fromSettings) return { ...fromSettings, source: "app-settings", owner: "", ownerAccessOnly: false, forAllUsers: creds.permissionsTestForAllUsers };
   try {
     const list = await credentialVaultClient.listCredentials({ name: `"${CREDENTIAL_NAME}"`, type: "USERNAME_PASSWORD" });
     const cred = (list.credentials ?? []).find((c) => c.name === CREDENTIAL_NAME);
-    if (!cred?.id) return { error: `No "User and password" credential named "${CREDENTIAL_NAME}" found in the credential vault (or it is owner-only and owned by someone else).` };
+    if (!cred?.id) return { error: `No account OAuth client in the app settings${error ? ` (${error})` : ""}. An admin of this app stores it once under Account Management access.` };
     const details = (await credentialVaultClient.getCredentialsDetails({ id: cred.id })) as { username?: string; password?: string; description?: string; owner?: string; ownerAccessOnly?: boolean };
     const accountUuid = (accountOverride && UUID_RE.exec(accountOverride)?.[0]) || UUID_RE.exec(details.description ?? "")?.[0];
     if (!details.username || !details.password) return { error: `Credential "${CREDENTIAL_NAME}" has no client ID or secret.` };
     if (!accountUuid) return { error: `Credential "${CREDENTIAL_NAME}" has no account UUID in its description.` };
-    return { clientId: details.username, clientSecret: details.password, accountUuid: accountUuid.toLowerCase(), owner: details.owner ?? "", ownerAccessOnly: !!details.ownerAccessOnly };
+    // Vault credentials were owner-only or shared on purpose; keep that choice.
+    return { clientId: details.username, clientSecret: details.password, accountUuid: accountUuid.toLowerCase(), source: "credential-vault", owner: details.owner ?? "", ownerAccessOnly: !!details.ownerAccessOnly, forAllUsers: true };
   } catch (e) {
     return { error: `Could not read the credential vault: ${(e as Error)?.message ?? String(e)}` };
   }
-}
-
-// Account tokens live 300 s; a warm function instance reuses one until shortly before it expires.
-let cached: { key: string; token: string; scopes: string; until: number } | null = null;
-async function token(c: Creds): Promise<{ token: string; scopes: string }> {
-  const key = `${c.clientId}|${c.accountUuid}`;
-  if (cached && cached.key === key && cached.until > Date.now()) return cached;
-  let last = "";
-  for (const scope of SCOPE_SETS) {
-    const body = new URLSearchParams({ grant_type: "client_credentials", client_id: c.clientId, client_secret: c.clientSecret, scope, resource: `urn:dtaccount:${c.accountUuid}` });
-    const res = await fetch(SSO, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() });
-    const json = (await res.json().catch(() => ({}))) as { access_token?: string; expires_in?: number; scope?: string; error?: string; error_description?: string };
-    if (res.ok && json.access_token) {
-      cached = { key, token: json.access_token, scopes: json.scope ?? scope, until: Date.now() + Math.max(30, (json.expires_in ?? 300) - 30) * 1000 };
-      return cached;
-    }
-    last = `${res.status} ${json.error ?? ""} ${json.error_description ?? ""}`.trim();
-    // invalid_scope: the client lacks this scope set; try the next one. Anything else will not get better.
-    if (json.error !== "invalid_scope") break;
-  }
-  throw new ApiError(`The OAuth token request was rejected (${last}). Check the client ID, secret, account UUID and the client's scopes.`, 401);
 }
 
 async function get<T>(t: string, path: string): Promise<T> {
@@ -133,10 +109,13 @@ export default async function (payload: Payload): Promise<IamAccessResult> {
   const creds = await readCredential(payload.accountUuid);
   if ("error" in creds) return { status: "no-credential", message: creds.error };
   try {
-    const { token: t, scopes } = await token(creds);
+    // The test reads the account's IAM setup: only the app's admins may run it unless an admin allowed it for every user.
+    if (!creds.forAllUsers && !(await callerCanManage()))
+      return { status: "forbidden", message: "Only users who can change this app's settings can run the Permissions Test here. An admin can allow it for every user under Account Management access." };
+    const { token: t, scopes } = await accountToken(creds, SCOPE_SETS);
     const acc = encodeURIComponent(creds.accountUuid);
 
-    if (payload.action === "status") return { status: "ok-status", accountUuid: creds.accountUuid, scopes, owner: creds.owner, ownerAccessOnly: creds.ownerAccessOnly };
+    if (payload.action === "status") return { status: "ok-status", accountUuid: creds.accountUuid, scopes, owner: creds.owner, ownerAccessOnly: creds.ownerAccessOnly, source: creds.source, forAllUsers: creds.forAllUsers };
 
     if (payload.action === "search") {
       const needle = (payload.text ?? "").trim().toLowerCase();

@@ -20,8 +20,10 @@
     "dependencies": {
         "@dynatrace-sdk/app-environment": "^1.1.4",
         "@dynatrace-sdk/app-utils": "^1.0.2",
+        "@dynatrace-sdk/client-app-settings-v2": "^1.2.1",
         "@dynatrace-sdk/client-classic-environment-v2": "^9.1.0",
         "@dynatrace-sdk/client-iam": "^1.0.0",
+        "@dynatrace-sdk/client-platform-management-service": "^1.9.0",
         "@dynatrace-sdk/client-query": "^1.21.2",
         "@dynatrace-sdk/http-client": "^1.5.1",
         "@dynatrace-sdk/navigation": "^2.2.0",

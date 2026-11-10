@@ -1,10 +1,10 @@
 import { functions } from "@dynatrace-sdk/app-utils";
-import { credentialVaultClient, settingsObjectsClient } from "@dynatrace-sdk/client-classic-environment-v2";
+import { settingsObjectsClient } from "@dynatrace-sdk/client-classic-environment-v2";
 import { queryExecutionClient } from "@dynatrace-sdk/client-query";
 import { httpClient } from "@dynatrace-sdk/http-client";
 import { getIntentLink } from "@dynatrace-sdk/navigation";
 import { PROBLEM_DAYS, dqlString } from "./queries";
-import { errorMessage, type DocLink, type ManualAction, type SubmitResult } from "./remediation";
+import { type DocLink, type ManualAction } from "./remediation";
 import { eventNamesQuery, predefinedTypes, toProfile, translateProfile, type AlertingProfile, type DelayTiming, type Note } from "./alertingProfiles";
 
 // ---------------------------------------------------------------------------
@@ -559,15 +559,7 @@ export async function previewTrigger(plan: WorkflowPlan): Promise<Preview> {
 
 export type MigrationResult = { name: string; ok: boolean; message: string; id?: string };
 
-// --- Platform token for the `workflows` app function (mirrors api/workflows.function.ts) ----------------------------
-export const WORKFLOW_CREDENTIAL = "architect-assistant-workflows";
-export const WORKFLOW_TOKEN_SCOPES = ["automation:workflows:read", "automation:workflows:write"];
-export const PLATFORM_TOKENS_URL = "https://myaccount.dynatrace.com/platformTokens";
-export const WORKFLOW_TOKEN_DOCS: DocLink[] = [
-  { title: "Platform tokens", url: "https://docs.dynatrace.com/docs/manage/identity-access-management/access-tokens-and-oauth-clients/platform-tokens" },
-  { title: "Credential vault", url: "https://docs.dynatrace.com/docs/manage/credential-vault" },
-];
-
+// --- The `workflows` app function (mirrors api/workflows.function.ts; its platform token is in the app settings) ----
 type FnResult =
   | { status: "ok-status"; owner: string; ownerAccessOnly: boolean }
   | { status: "ok-create"; id: string }
@@ -597,33 +589,6 @@ export async function readWorkflowTokenStatus(): Promise<WorkflowTokenStatus> {
   if (r.status === "ok-status") return { state: "ok", owner: r.owner, ownerAccessOnly: r.ownerAccessOnly };
   const message = "message" in r ? r.message : `Unexpected response (${r.status}).`;
   return { state: r.status === "no-credential" ? "missing" : "failing", message };
-}
-
-/** Stores (or replaces) the platform token in the credential vault. */
-export async function storeWorkflowToken(token: string, ownerAccessOnly: boolean): Promise<SubmitResult> {
-  const t = token.trim();
-  if (!/^dt0s16\.[A-Za-z0-9]+\.[A-Za-z0-9]+$/.test(t)) return { ok: false, message: "That does not look like a platform token (dt0s16.XXXX.YYYY)." };
-  const body = {
-    name: WORKFLOW_CREDENTIAL,
-    description: `Architect Assistant Problem notifications: platform token (${WORKFLOW_TOKEN_SCOPES.join(", ")}) used to create the migration workflows.`,
-    type: "TOKEN" as const,
-    token: t,
-    scopes: ["APP_ENGINE" as const],
-    // Owner only: just the person who stores it can create workflows. Off: every user of this app creates them as the token's user.
-    ownerAccessOnly,
-  };
-  try {
-    const list = await credentialVaultClient.listCredentials({ name: `"${WORKFLOW_CREDENTIAL}"`, type: "TOKEN" });
-    const existing = (list.credentials ?? []).find((c) => c.name === WORKFLOW_CREDENTIAL);
-    if (existing?.id) {
-      await credentialVaultClient.updateCredentials({ id: existing.id, body });
-      return { ok: true, message: `Credential "${WORKFLOW_CREDENTIAL}" updated.`, objectId: existing.id };
-    }
-    const res = await credentialVaultClient.createCredentials({ body });
-    return { ok: true, message: `Credential "${WORKFLOW_CREDENTIAL}" created.`, objectId: res?.id };
-  } catch (e) {
-    return { ok: false, message: errorMessage(e) };
-  }
 }
 
 /** One function call (one POST) per workflow (no bulk create); runs one at a time so each failure is reported per notification. */

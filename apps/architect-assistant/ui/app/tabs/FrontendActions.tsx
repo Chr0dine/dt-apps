@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { OwnerTagForm } from "./OwnerTagForm";
+import { AppCredentialsCard } from "./AppCredentials";
 import { Flex } from "@dynatrace/strato-components/layouts";
 import { Heading, Text } from "@dynatrace/strato-components/typography";
 import { Button } from "@dynatrace/strato-components/buttons";
@@ -11,18 +12,13 @@ import { getCurrentUserDetails } from "@dynatrace-sdk/app-environment";
 import { useDql } from "../useDql";
 import { QueryActions } from "../components";
 import { syntheticMonitorsQuery, type Timeframe } from "../queries";
-import { USER_TAG_CREDENTIAL as USER_TAG_CREDENTIAL_NAME, type FrontendRow } from "../frontends";
+import type { FrontendRow } from "../frontends";
 import { OWNER_TAG_DOCS, type DocLink, type SubmitResult } from "../remediation";
 import { Field, Links, ManualActionView, Request, ResultLine } from "../RemediationPanel";
 import {
   ASSIGN_DOCS,
   CREATE_MONITOR_DOCS,
   TOKEN_DOCS,
-  TOKEN_VALID_DAYS,
-  createAndStoreUserTagToken,
-  readTokenStatus,
-  storeUserTagToken,
-  type TokenStatus,
   HEALTH_DOCS,
   REPLAY_DOCS,
   RUM_DOCS,
@@ -354,84 +350,6 @@ function VitalsLinks({ frontends, failing, what }: { frontends: FrontendRow[]; f
   );
 }
 
-// --- API: user tagging token (credential vault) ---------------------------------------------------------------
-function UserTagTokenForm({ onDone }: { onDone: () => void }) {
-  const [status, setStatus] = useState<TokenStatus | null>(null);
-  const [statusError, setStatusError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"auto" | "paste">("auto");
-  const [token, setToken] = useState("");
-  const [confirm, setConfirm] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<SubmitResult | null>(null);
-  const refresh = () =>
-    readTokenStatus()
-      .then((s) => {
-        setStatus(s);
-        setStatusError(null);
-      })
-      .catch((e) => setStatusError((e as Error)?.message ?? String(e)));
-  useEffect(() => {
-    void refresh();
-  }, []);
-  const run = async () => {
-    setBusy(true);
-    const r = mode === "auto" ? await createAndStoreUserTagToken() : await storeUserTagToken(token);
-    setResult(r);
-    setBusy(false);
-    setConfirm(false);
-    if (r.ok) {
-      setToken("");
-      void refresh();
-      onDone();
-    }
-  };
-  return (
-    <Flex flexDirection="column" gap={12}>
-      <Text>
-        User tag rules are read through the classic Config API, so the app needs an API token with the ReadConfig scope stored in the credential vault as
-        “{USER_TAG_CREDENTIAL_NAME}”. The app can create that token for you, or store one you paste. An existing credential of that name is replaced.
-      </Text>
-      <Text style={hint}>
-        {statusError
-          ? `Could not read the credential vault: ${statusError}`
-          : !status
-            ? "Checking the credential vault…"
-            : status.exists
-              ? `Credential found (${status.id}${status.owner ? `, owner ${status.owner}` : ""}). Setting it up again replaces the token.`
-              : "No credential yet."}
-      </Text>
-      <Field label="How">
-        <Select value={mode} onChange={(v: "auto" | "paste" | null) => v && setMode(v)}>
-          <Select.Content>
-            <Select.Option value="auto">Create a ReadConfig token automatically</Select.Option>
-            <Select.Option value="paste">Store a token I paste</Select.Option>
-          </Select.Content>
-        </Select>
-      </Field>
-      {mode === "auto" ? (
-        <Text style={hint}>
-          Creates an API token named “{USER_TAG_CREDENTIAL_NAME}” with only the ReadConfig scope, owned by you and valid for {TOKEN_VALID_DAYS} days, then stores
-          it in the vault (APP_ENGINE scope, usable by every user of this app). The token is never shown. Needs permission to create API tokens; if that is not
-          allowed, paste a token instead.
-        </Text>
-      ) : (
-        <Field label="API token (ReadConfig scope)">
-          <TextInput type="password" value={token} onChange={(v: string) => setToken(v)} placeholder="dt0c01.XXXXXXXX.YYYYYYYY" />
-        </Field>
-      )}
-      <Checkbox value={confirm} onChange={(v: boolean) => setConfirm(v)} disabled={mode === "paste" && !token.trim()}>
-        {mode === "auto" ? "Create a ReadConfig API token and store it in the credential vault" : "Store this token in the credential vault"}
-      </Checkbox>
-      <Flex gap={8}>
-        <Button variant="emphasized" disabled={busy || !confirm || (mode === "paste" && !token.trim())} onClick={() => void run()}>
-          {mode === "auto" ? "Create and store token" : "Store token"}
-        </Button>
-      </Flex>
-      <ResultLine result={result} />
-    </Flex>
-  );
-}
-
 // --- Panel -----------------------------------------------------------------------------------------------------
 type ActionDef = { id: string; label: string; kind: "api" | "link"; node: React.ReactNode; docs: DocLink[] };
 
@@ -458,7 +376,7 @@ export function FrontendActions({
     { id: "assign", label: "Assign an existing synthetic monitor", kind: "api", node: <AssignMonitorForm frontends={frontends} tf={tf} />, docs: ASSIGN_DOCS },
     { id: "create-monitor", label: "Create a synthetic monitor", kind: "link", node: <CreateMonitorLink frontends={frontends} />, docs: CREATE_MONITOR_DOCS },
     { id: "owner", label: "Assign owning team", kind: "api", node: <OwnerTagForm targets={frontends.map((f) => ({ id: f.id, name: f.name, typeLabel: "Frontend", owner: f.owner }))} onDone={onChanged} />, docs: OWNER_TAG_DOCS },
-    { id: "user-tag-token", label: "Set up the user tagging token", kind: "api", node: <UserTagTokenForm onDone={onChanged} />, docs: TOKEN_DOCS },
+    { id: "user-tag-token", label: "Set up the user tagging token", kind: "api", node: <AppCredentialsCard use="readconfig" onChanged={onChanged} />, docs: TOKEN_DOCS },
     { id: "user-tags", label: "Configure user tagging", kind: "link", node: <UserTagLinks frontends={frontends} measured={measuredUserTags} />, docs: USER_TAG_DOCS },
     {
       id: "vitals",

@@ -1,8 +1,7 @@
 import { functions } from "@dynatrace-sdk/app-utils";
 import { getEnvironmentId } from "@dynatrace-sdk/app-environment";
 import { usersAndGroupsClient } from "@dynatrace-sdk/client-iam";
-import { credentialVaultClient } from "@dynatrace-sdk/client-classic-environment-v2";
-import { errorMessage, type SubmitResult } from "./remediation";
+import { errorMessage } from "./remediation";
 import type { AccessBinding, AccessSubject } from "./iamAccess";
 
 // ---------------------------------------------------------------------------
@@ -12,12 +11,9 @@ import type { AccessBinding, AccessSubject } from "./iamAccess";
 //   function when the environment API is not allowed for the current user,
 // - what applies to the subject: the iam-access app function (Account Management API: groups, bindings, policies,
 //   boundaries), turned into AccessBindings for the engine in iamAccess.ts,
-// - the OAuth client the function uses, stored in the credential vault (CREDENTIAL_NAME, account UUID in the description).
+// - whether the function can use the account OAuth client (stored in the app settings by AppCredentialsCard).
 // ---------------------------------------------------------------------------
 
-export const ACCOUNT_CREDENTIAL = "architect-assistant-account-api";
-export const OAUTH_SCOPES = ["account-idm-read", "iam:bindings:read", "iam:policies:read", "iam:boundaries:read"];
-export const OAUTH_SCOPES_LEGACY = ["account-idm-read", "iam-policies-management"];
 export const OUTBOUND_HOSTS = ["sso.dynatrace.com", "api.dynatrace.com"];
 export const ACCESS_DOCS = {
   oauth: { title: "OAuth clients", url: "https://docs.dynatrace.com/docs/manage/identity-access-management/access-tokens-and-oauth-clients/oauth-clients" },
@@ -46,9 +42,9 @@ type FnResult =
       warnings: string[];
     }
   | { status: "ok-search"; results: SearchHit[]; total: number }
-  | { status: "ok-status"; accountUuid: string; scopes: string; owner: string; ownerAccessOnly: boolean }
+  | { status: "ok-status"; accountUuid: string; scopes: string; owner: string; ownerAccessOnly: boolean; source: "app-settings" | "credential-vault"; forAllUsers: boolean }
   | { status: FailureStatus; message: string };
-export type FailureStatus = "no-credential" | "unauthorized" | "blocked" | "not-found" | "error";
+export type FailureStatus = "no-credential" | "unauthorized" | "forbidden" | "blocked" | "not-found" | "error";
 export type Failure = { status: FailureStatus; message: string };
 
 /** functions.call keeps the HTTP response as `cause`; 404 = the function is not part of the running app. */
@@ -149,44 +145,14 @@ export async function resolveSubject(target: { kind: "user"; email: string } | {
 }
 
 // --- Setup ---------------------------------------------------------------------------------------------------------
-export type SetupStatus = { state: "ok"; accountUuid: string; scopes: string; owner: string; ownerAccessOnly: boolean } | { state: "missing" | "failing"; failure: Failure };
+export type SetupStatus =
+  | { state: "ok"; accountUuid: string; scopes: string; owner: string; ownerAccessOnly: boolean; source: "app-settings" | "credential-vault" }
+  | { state: "missing" | "failing"; failure: Failure };
 
 /** Whether the function can read the credential and get an account token. */
 export async function readSetupStatus(): Promise<SetupStatus> {
   const r = await call({ action: "status" });
-  if (r.status === "ok-status") return { state: "ok", accountUuid: r.accountUuid, scopes: r.scopes, owner: r.owner, ownerAccessOnly: r.ownerAccessOnly };
+  if (r.status === "ok-status") return { state: "ok", accountUuid: r.accountUuid, scopes: r.scopes, owner: r.owner, ownerAccessOnly: r.ownerAccessOnly, source: r.source };
   const failure: Failure = "message" in r ? r : { status: "error", message: `Unexpected response (${r.status}).` };
   return { state: failure.status === "no-credential" ? "missing" : "failing", failure };
-}
-
-/** Stores (or replaces) the OAuth client in the credential vault. */
-export async function storeAccountCredential(clientId: string, clientSecret: string, accountUuid: string, ownerAccessOnly: boolean): Promise<SubmitResult> {
-  const id = clientId.trim();
-  const secret = clientSecret.trim();
-  const account = accountUuid.trim().toLowerCase();
-  if (!/^dt0s0\d\.[A-Za-z0-9]+$/.test(id)) return { ok: false, message: "That does not look like an OAuth client ID (dt0s02.XXXX)." };
-  if (!/^dt0s0\d\.[A-Za-z0-9]+\.[A-Za-z0-9]+$/.test(secret)) return { ok: false, message: "That does not look like an OAuth client secret (dt0s02.XXXX.YYYY)." };
-  if (!isUuid(account)) return { ok: false, message: "The account UUID has the form 01234567-89ab-cdef-0123-456789abcdef (Account Management > OAuth clients shows it)." };
-  const body = {
-    name: ACCOUNT_CREDENTIAL,
-    description: `Architect Assistant Permissions Test: OAuth client for the Account Management API (read-only). Account UUID: ${account}`,
-    type: "USERNAME_PASSWORD" as const,
-    user: id,
-    password: secret,
-    scopes: ["APP_ENGINE" as const],
-    // Owner only: just the person who stores it can run the test. Off: everyone who can run the app can read the account's IAM setup.
-    ownerAccessOnly,
-  };
-  try {
-    const list = await credentialVaultClient.listCredentials({ name: `"${ACCOUNT_CREDENTIAL}"`, type: "USERNAME_PASSWORD" });
-    const existing = (list.credentials ?? []).find((c) => c.name === ACCOUNT_CREDENTIAL);
-    if (existing?.id) {
-      await credentialVaultClient.updateCredentials({ id: existing.id, body });
-      return { ok: true, message: `Credential "${ACCOUNT_CREDENTIAL}" updated.`, objectId: existing.id };
-    }
-    const res = await credentialVaultClient.createCredentials({ body });
-    return { ok: true, message: `Credential "${ACCOUNT_CREDENTIAL}" created.`, objectId: res?.id };
-  } catch (e) {
-    return { ok: false, message: errorMessage(e) };
-  }
 }

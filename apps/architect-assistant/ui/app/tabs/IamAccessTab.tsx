@@ -3,7 +3,7 @@ import { Flex } from "@dynatrace/strato-components/layouts";
 import { Heading, Text } from "@dynatrace/strato-components/typography";
 import { Button } from "@dynatrace/strato-components/buttons";
 import { MessageContainer, ProgressCircle } from "@dynatrace/strato-components/content";
-import { Checkbox, PasswordInput, TextInput, ToggleButtonGroup } from "@dynatrace/strato-components/forms";
+import { Checkbox, TextInput, ToggleButtonGroup } from "@dynatrace/strato-components/forms";
 import { AccountIcon, CheckmarkIcon, GroupIcon, WarningIcon, XmarkIcon } from "@dynatrace/strato-icons";
 import Colors from "@dynatrace/strato-design-tokens/colors";
 import { useAIInsights } from "../AIInsights";
@@ -27,15 +27,11 @@ import {
 } from "../iamAccess";
 import {
   ACCESS_DOCS,
-  ACCOUNT_CREDENTIAL,
-  OAUTH_SCOPES,
-  OAUTH_SCOPES_LEGACY,
   OUTBOUND_HOSTS,
   isUuid,
   readSetupStatus,
   resolveSubject,
   searchSubjects,
-  storeAccountCredential,
   type Failure,
   type Resolved,
   type SearchResult,
@@ -47,6 +43,7 @@ import { settingsLink } from "../deepMonitoring";
 import { OUTBOUND_SCHEMA } from "../deepDocs";
 import { CatalogBanner, DocLink, DocLinks, card, code, hint, linkStyle, plural } from "./IamShared";
 import { AppIcon } from "./IamPolicyTab";
+import { AppCredentialsCard } from "./AppCredentials";
 
 // ---------------------------------------------------------------------------
 // Permissions Test: pick a user (name or email) or a group (name contains), read what is bound to it in Account
@@ -320,132 +317,45 @@ const hitStyle: React.CSSProperties = {
 };
 
 // --- Setup -------------------------------------------------------------------------------------------------------------
+/** The account OAuth client lives in the app settings (AppCredentialsCard); below it, whether the function can use it. */
 function SetupCard({ setup, onSaved }: { setup: SetupStatus | null; onSaved: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [clientId, setClientId] = useState("");
-  const [secret, setSecret] = useState("");
-  const [account, setAccount] = useState("");
-  const [ownerOnly, setOwnerOnly] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);
   const outbound = settingsLink(OUTBOUND_SCHEMA);
-  const showForm = open || (setup !== null && setup.state !== "ok");
-  const save = () => {
-    setSaving(true);
-    void storeAccountCredential(clientId, secret, account, ownerOnly).then((r) => {
-      setSaving(false);
-      setMsg(r);
-      if (r.ok) {
-        setSecret("");
-        setOpen(false);
-        onSaved();
-      }
-    });
-  };
   return (
-    <div style={card}>
-      <Flex justifyContent="space-between" alignItems="baseline" flexWrap="wrap" gap={8}>
-        <Heading level={4}>Account Management access</Heading>
-        {setup?.state === "ok" && (
-          <Button size="condensed" onClick={() => setOpen((v) => !v)}>
-            {open ? "Cancel" : "Change credential"}
-          </Button>
-        )}
-      </Flex>
-      {setup === null ? (
-        <Text style={{ ...hint, display: "block", marginTop: 4 }}>Checking the OAuth client…</Text>
-      ) : setup.state === "ok" ? (
-        <Text style={{ display: "block", fontSize: 13, marginTop: 4 }}>
-          <CheckmarkIcon style={{ width: 14, height: 14, verticalAlign: "-2px", color: Colors.Text.Success.Default }} /> Connected to account <span style={code}>{setup.accountUuid}</span> with{" "}
-          <span style={code}>{setup.scopes}</span>. Credential <span style={code}>{ACCOUNT_CREDENTIAL}</span>
-          {setup.owner ? ` (owner ${setup.owner}` : " ("}
-          {setup.ownerAccessOnly ? ", owner only: other users of this app cannot run the test)" : ", shared: every user of this app can read the account's IAM setup)"}.
+    <Flex flexDirection="column" gap={8}>
+      <AppCredentialsCard use="account" onChanged={onSaved} />
+      {setup?.state === "ok" && (
+        <Text style={{ ...hint, display: "block" }}>
+          The function reaches the Account Management API with <span style={code}>{setup.scopes}</span>
+          {setup.source === "credential-vault" ? " (credential vault entry of an earlier version)" : ""}.
         </Text>
-      ) : (
-        <div style={{ marginTop: 6 }}>
-          <MessageContainer variant={setup.state === "missing" ? "neutral" : "warning"}>
-            <MessageContainer.Description>
-              <span>
-                {setup.state === "missing"
-                  ? "Users and groups are found with this environment's IAM API, but their group membership, policies and boundaries are only exposed by the account-level Account Management API, which needs an OAuth client of the account. Store one below (read-only scopes)."
-                  : setup.failure.status === "blocked"
-                    ? `The app function cannot reach ${OUTBOUND_HOSTS.join(" and ")}: add both hosts to the allowed outbound connections.`
-                    : `The stored OAuth client does not work: ${setup.failure.message}`}
-                {setup.state !== "missing" && setup.failure.status === "blocked" && outbound && (
-                  <>
-                    {" "}
-                    <DocLink href={outbound}>Allowed outbound connections</DocLink>
-                  </>
-                )}
-              </span>
-            </MessageContainer.Description>
-          </MessageContainer>
-        </div>
       )}
-      {showForm && (
-        <div style={{ marginTop: 10 }}>
-          <ol style={{ margin: "0 0 8px", paddingLeft: 18, fontSize: 12, lineHeight: "18px" }}>
-            <li>
-              In <DocLink href={ACCOUNT_MANAGEMENT_URL}>Account Management</DocLink> &gt; Identity &amp; access management &gt; OAuth clients, create a client with{" "}
-              {OAUTH_SCOPES.map((s) => (
-                <span key={s} style={{ ...code, marginRight: 4 }}>
-                  {s}
-                </span>
-              ))}
-              (older accounts: {OAUTH_SCOPES_LEGACY.map((s) => (
-                <span key={s} style={{ ...code, marginRight: 4 }}>
-                  {s}
-                </span>
-              ))}
-              ). The page also shows the account UUID.
-            </li>
-            <li>
-              Allow {OUTBOUND_HOSTS.map((h) => (
-                <span key={h} style={{ ...code, marginRight: 4 }}>
-                  {h}
-                </span>
-              ))}
-              in the {outbound ? <DocLink href={outbound}>allowed outbound connections</DocLink> : "allowed outbound connections"} if that allowlist is enforced.
-            </li>
-            <li>Save the client here: it is stored in the credential vault as a user-and-password credential (client ID and secret), with the account UUID in its description.</li>
-          </ol>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
-            <label>
-              <Text style={{ ...hint, display: "block", marginBottom: 4 }}>Client ID</Text>
-              <TextInput value={clientId} onChange={(v: string) => setClientId(v)} placeholder="dt0s02.ABCD1234" aria-label="OAuth client ID" />
-            </label>
-            <label>
-              <Text style={{ ...hint, display: "block", marginBottom: 4 }}>Client secret</Text>
-              <PasswordInput value={secret} onChange={(v: string) => setSecret(v)} placeholder="dt0s02.ABCD1234.…" aria-label="OAuth client secret" />
-            </label>
-            <label>
-              <Text style={{ ...hint, display: "block", marginBottom: 4 }}>Account UUID</Text>
-              <TextInput value={account} onChange={(v: string) => setAccount(v)} placeholder="01234567-89ab-cdef-0123-456789abcdef" aria-label="Account UUID" />
-            </label>
-          </div>
-          <Flex gap={12} alignItems="center" flexWrap="wrap" style={{ marginTop: 8 }}>
-            <Checkbox value={ownerOnly} onChange={(v: boolean) => setOwnerOnly(v)}>
-              Only I can use it (owner only). Off: everyone who can run this app can read the account&apos;s groups, policies and boundaries through it.
-            </Checkbox>
-          </Flex>
-          <Flex gap={8} alignItems="center" style={{ marginTop: 8 }}>
-            <Button variant="emphasized" onClick={save} disabled={saving || !clientId.trim() || !secret.trim() || !account.trim()}>
-              {saving ? "Saving…" : "Save to the credential vault"}
-            </Button>
-            {msg && <Text style={{ fontSize: 12, color: msg.ok ? Colors.Text.Success.Default : Colors.Text.Critical.Default }}>{msg.message}</Text>}
-          </Flex>
-          <div style={{ marginTop: 8 }}>
-            <DocLinks title="Setup documentation" docs={[ACCESS_DOCS.oauth, ACCESS_DOCS.accountAuth, ACCESS_DOCS.credentialVault]} />
-          </div>
-        </div>
+      {setup?.state === "failing" && (
+        <MessageContainer variant="warning">
+          <MessageContainer.Description>
+            <span>
+              {setup.failure.status === "blocked"
+                ? `The app function cannot reach ${OUTBOUND_HOSTS.join(" and ")}: add both hosts to the allowed outbound connections.`
+                : setup.failure.status === "forbidden"
+                  ? setup.failure.message
+                  : `The stored OAuth client does not work: ${setup.failure.message}`}
+              {setup.failure.status === "blocked" && outbound && (
+                <>
+                  {" "}
+                  <DocLink href={outbound}>Allowed outbound connections</DocLink>
+                </>
+              )}
+            </span>
+          </MessageContainer.Description>
+        </MessageContainer>
       )}
-    </div>
+    </Flex>
   );
 }
 
 function FailureMessage({ failure, label, onRetry }: { failure: Failure; label: string; onRetry: () => void }) {
   const title: Record<Failure["status"], string> = {
     "no-credential": "No OAuth client stored for the Account Management API",
+    forbidden: "Only the app's admins can run the Permissions Test",
     unauthorized: "The Account Management API refused the request",
     blocked: "The app function cannot reach the Account Management API",
     "not-found": `${label} was not found in the account`,

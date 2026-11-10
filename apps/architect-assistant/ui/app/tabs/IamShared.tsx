@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Flex } from "@dynatrace/strato-components/layouts";
 import { Heading, Text } from "@dynatrace/strato-components/typography";
 import { Button } from "@dynatrace/strato-components/buttons";
@@ -450,6 +450,69 @@ export function downloadText(text: string, fileName: string) {
 }
 export const fileNameFor = (name: string, fallback: string) => `${(name.trim() || fallback).replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || fallback}.txt`;
 
+/**
+ * Editor diagnostics that are always well formed for a text of `length`: inside [0, length], from <= to, at least one
+ * character wide where the text allows it, sorted, without exact duplicates. Strato's CodeEditor applies them in a
+ * React effect, so a malformed range there takes the whole editor down.
+ */
+export function inlineDiagnostics(diagnostics: Diagnostic[], length: number): InlineDiagnostic[] {
+  const clamp = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.min(Math.trunc(n), length)) : 0);
+  const seen = new Set<string>();
+  const out: InlineDiagnostic[] = [];
+  for (const d of diagnostics) {
+    let from = clamp(d.from);
+    let to = clamp(Math.max(d.to, d.from));
+    if (to === from) {
+      if (to < length) to++;
+      else if (from > 0) from--;
+    }
+    const sig = `${from}:${to}:${d.severity}:${d.message}`;
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    out.push({ from, to, message: d.message, severity: d.severity });
+  }
+  return out.sort((a, b) => a.from - b.from || a.to - b.to);
+}
+
+const MAX_EDITOR_RESTARTS = 3;
+/**
+ * Strato's CodeEditor catches its own errors and shows "An error occurred" with Reset, without an error callback or
+ * reset keys. Seen once while editing a policy by hand (not reproducible offline), so the pane watches for it: when the
+ * CodeMirror view disappears after it was shown, the editor is remounted with the current text (up to
+ * MAX_EDITOR_RESTARTS times; then Strato's Reset stays).
+ */
+function useEditorRecovery() {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [editorKey, setEditorKey] = useState(0);
+  const [restarts, setRestarts] = useState(0);
+  const mounted = useRef(false);
+  const count = useRef(0);
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const check = () => {
+      if (box.querySelector(".cm-editor")) {
+        mounted.current = true;
+        return;
+      }
+      // Fallback = the editor was shown before, is gone now, and the fallback's Reset button is there.
+      if (!mounted.current || !box.querySelector("button") || count.current >= MAX_EDITOR_RESTARTS) {
+        if (mounted.current && count.current >= MAX_EDITOR_RESTARTS) setRestarts(MAX_EDITOR_RESTARTS + 1);
+        return;
+      }
+      mounted.current = false;
+      count.current++;
+      setRestarts(count.current);
+      setEditorKey((k) => k + 1);
+    };
+    const mo = new MutationObserver(check);
+    mo.observe(box, { childList: true, subtree: true });
+    check();
+    return () => mo.disconnect();
+  }, []);
+  return { boxRef, editorKey, restarts };
+}
+
 const SEVERITY_COLOR: Record<Diagnostic["severity"], string> = { error: "#C21930", warning: "#FF832B", info: "#4589FF" };
 
 export function EditorPane({
@@ -482,10 +545,8 @@ export function EditorPane({
 }) {
   const text = manual ?? generated;
   const [copied, setCopied] = useState<string | null>(null);
-  const inline = useMemo<InlineDiagnostic[]>(
-    () => diagnostics.map((d) => ({ from: Math.min(d.from, text.length), to: Math.min(Math.max(d.to, d.from + 1), text.length), message: d.message, severity: d.severity })),
-    [diagnostics, text.length],
-  );
+  const inline = useMemo(() => inlineDiagnostics(diagnostics, text.length), [diagnostics, text.length]);
+  const { boxRef, editorKey, restarts } = useEditorRecovery();
   const errors = diagnostics.filter((d) => d.severity === "error").length;
   const warnings = diagnostics.filter((d) => d.severity === "warning").length;
   const copy = () =>
@@ -505,8 +566,9 @@ export function EditorPane({
           <span style={{ color: warnings ? SEVERITY_COLOR.warning : undefined }}>{plural(warnings, "warning")}</span>
         </Text>
       </Flex>
-      <div style={{ height: 460, border: "1px solid rgba(128,128,128,0.3)", borderRadius: 6, overflow: "hidden" }}>
+      <div ref={boxRef} style={{ height: 460, border: "1px solid rgba(128,128,128,0.3)", borderRadius: 6, overflow: "hidden" }}>
         <CodeEditor
+          key={editorKey}
           value={text}
           onChange={(v: string) => onEdit(v === generated ? null : v)}
           diagnostics={inline}
@@ -517,6 +579,13 @@ export function EditorPane({
           aria-label={title}
         />
       </div>
+      {restarts > 0 && (
+        <Text style={{ ...hint, display: "block" }}>
+          {restarts > MAX_EDITOR_RESTARTS
+            ? "The editor keeps failing; use Reset above. Your text is kept. The browser console shows the error (CodeEditor)."
+            : `The editor hit an internal error and was restarted${restarts > 1 ? ` (${restarts} times)` : ""}; your text is kept. The browser console shows the error (CodeEditor).`}
+        </Text>
+      )}
       {manual !== null && (
         <MessageContainer variant="neutral">
           <MessageContainer.Description>

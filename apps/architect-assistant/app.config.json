@@ -78,15 +78,11 @@
       },
       {
         "name": "environment-api:credentials:read",
-        "comment": "Frontends: read the ReadConfig API token (credential vault) the user-tags function uses for Config API v1, and check whether it exists; Databases: list user-and-password credentials with the Extension authentication scope for a monitoring configuration; Permissions Test: the iam-access function reads the Account Management OAuth client (architect-assistant-account-api); Problem notifications: the workflows function reads the platform token (architect-assistant-workflows) and the tab checks it"
-      },
-      {
-        "name": "environment-api:credentials:write",
-        "comment": "Frontends action: store the user tagging token in the credential vault; Permissions Test: store the Account Management OAuth client; Problem notifications: store the platform token that creates workflows"
+        "comment": "Fallback: the user-tags, workflows and iam-access functions still read the credential vault entries of earlier versions; Databases: list user-and-password credentials with the Extension authentication scope for a monitoring configuration"
       },
       {
         "name": "environment-api:api-tokens:write",
-        "comment": "Frontends action: create the ReadConfig API token for user tagging automatically"
+        "comment": "App credentials: the app-credentials function creates the ReadConfig API token Frontends uses for user tags (stored in the app settings)"
       },
       {
         "name": "environment-api:entities:write",
@@ -179,6 +175,18 @@
       {
         "name": "fleet-management:network-zones:read",
         "comment": "Network Zones tab: hosts that use a zone as alternative or failover (network zones hostStats)"
+      },
+      {
+        "name": "app-settings:objects:read",
+        "comment": "App credentials: the app functions read the app-credentials settings object (secrets come back in plain text only to the app's functions); the UI shows which credentials are set"
+      },
+      {
+        "name": "app-settings:objects:write",
+        "comment": "App credentials: admins store the account OAuth client and the platform / API tokens in the app-credentials settings object; also checked (effective permissions) to decide who may change them"
+      },
+      {
+        "name": "iam:service-users:use",
+        "comment": "App credentials: list the service users a platform token can be generated for"
       }
     ],
     "functionSandbox": {}
