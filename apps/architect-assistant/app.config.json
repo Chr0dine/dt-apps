@@ -3,7 +3,7 @@
   "environmentUrl": "https://chg74771.sprint.apps.dynatracelabs.com",
   "app": {
     "name": "Architect Assistant",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Confirm Dynatrace onboarding best practices are in place vs missing.",
     "id": "my.architect.assistant",
     "icon": "./assets/icon.png",

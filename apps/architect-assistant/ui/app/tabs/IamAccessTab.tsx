@@ -27,7 +27,7 @@ import {
 } from "../iamAccess";
 import {
   ACCESS_DOCS,
-  OUTBOUND_HOSTS,
+  accountHosts,
   isUuid,
   readSetupStatus,
   resolveSubject,
@@ -317,9 +317,16 @@ const hitStyle: React.CSSProperties = {
 };
 
 // --- Setup -------------------------------------------------------------------------------------------------------------
+/** A client with only account-idm-read can search users and groups, but not test them. */
+function iamScopesMissing(granted: string): boolean {
+  const scopes = granted.split(/\s+/);
+  return !scopes.includes("iam-policies-management") && ["iam:bindings:read", "iam:policies:read", "iam:boundaries:read"].some((s) => !scopes.includes(s));
+}
+
 /** The account OAuth client lives in the app settings (AppCredentialsCard); below it, whether the function can use it. */
 function SetupCard({ setup, onSaved }: { setup: SetupStatus | null; onSaved: () => void }) {
   const outbound = settingsLink(OUTBOUND_SCHEMA);
+  const iamMissing = setup?.state === "ok" && iamScopesMissing(setup.scopes);
   return (
     <Flex flexDirection="column" gap={8}>
       <AppCredentialsCard use="account" onChanged={onSaved} />
@@ -329,12 +336,22 @@ function SetupCard({ setup, onSaved }: { setup: SetupStatus | null; onSaved: () 
           {setup.source === "credential-vault" ? " (credential vault entry of an earlier version)" : ""}.
         </Text>
       )}
+      {iamMissing && (
+        <MessageContainer variant="warning">
+          <MessageContainer.Description>
+            <span>
+              The stored OAuth client can search users and groups, but testing them also needs <span style={code}>iam:bindings:read</span>,{" "}
+              <span style={code}>iam:policies:read</span> and <span style={code}>iam:boundaries:read</span>. Add them to the client in Account Management.
+            </span>
+          </MessageContainer.Description>
+        </MessageContainer>
+      )}
       {setup?.state === "failing" && (
         <MessageContainer variant="warning">
           <MessageContainer.Description>
             <span>
               {setup.failure.status === "blocked"
-                ? `The app function cannot reach ${OUTBOUND_HOSTS.join(" and ")}: add both hosts to the allowed outbound connections.`
+                ? `The app function cannot reach ${accountHosts().join(", ")}: add these hosts to the allowed outbound connections.`
                 : setup.failure.status === "forbidden"
                   ? setup.failure.message
                   : `The stored OAuth client does not work: ${setup.failure.message}`}
@@ -368,7 +385,7 @@ function FailureMessage({ failure, label, onRetry }: { failure: Failure; label: 
         <span>
           {failure.message}
           {/[.!?]$/.test(failure.message.trim()) ? "" : "."}
-          {failure.status === "unauthorized" && " The OAuth client needs account-idm-read plus iam:bindings:read, iam:policies:read and iam:boundaries:read (or iam-policies-management)."}{" "}
+          {failure.status === "unauthorized" && !failure.message.includes("scopes are not the problem") && " The OAuth client needs account-idm-read plus iam:bindings:read, iam:policies:read and iam:boundaries:read (or iam-policies-management)."}{" "}
           <button type="button" onClick={onRetry} style={textButton}>
             Retry
           </button>
@@ -1024,5 +1041,6 @@ function accessInsight(mode: Mode, resolved: Resolved | null, result: AccessResu
     data: { unrestricted: names(["granted"]), limited: names(["scoped"]), conditional: names(["conditional"]), none: names(["missing"]), denied: names(["denied"]) },
     dimensions: result?.dimensions.map((d) => d.label) ?? [],
     unboundParams: result?.notes.filter((n) => n.text.includes("bindParam")).length ?? 0,
+    iamScopesMissing: setup?.state === "ok" && iamScopesMissing(setup.scopes),
   };
 }

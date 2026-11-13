@@ -136,7 +136,9 @@ card's form does step 3 for you.
 2. **Allowed outbound connections.** If the setting `builtin:dt-javascript-runtime.allowed-outbound-connections` is
    enforced, add `sso.dynatrace.com` (token endpoint) and `api.dynatrace.com` (Account Management API). The
    [catalogue banner](#heading-description-and-catalogue-banner) additionally needs `docs.dynatrace.com` there for the
-   `iam-reference` function. Without it, the tab uses the bundled snapshot of the IAM reference.
+   `iam-reference` function. Without it, the tab uses the bundled snapshot of the IAM reference. On sprint and dev
+   environments the hosts differ; see [Sprint and dev environments](#sprint-and-dev-environments). The card lists the
+   hosts for the environment the app runs in.
 3. **Credential vault.** Saving the form stores a *User and password* credential with these properties:
    - Name: `architect-assistant-account-api`.
    - User: the client ID. Password: the client secret.
@@ -275,7 +277,8 @@ card can be in one of these states:
 | Checking | "Checking the OAuth client…" |
 | Connected (`ok`) | A check mark and "Connected to account *uuid* with *scopes*. Credential `architect-assistant-account-api` (owner *owner*, owner only: other users of this app cannot run the test)". When the credential is shared, the end reads "shared: every user of this app can read the account's IAM setup". *scopes* is the `scope` value of the token response. A **Change credential** / **Cancel** button toggles the form. |
 | Missing (`no-credential`) | A neutral message: "Users and groups are found with this environment's IAM API, but their group membership, policies and boundaries are only exposed by the account-level Account Management API, which needs an OAuth client of the account. Store one below (read-only scopes)." The form is open. |
-| Failing, blocked | A warning: "The app function cannot reach sso.dynatrace.com and api.dynatrace.com: add both hosts to the allowed outbound connections." It includes an **Allowed outbound connections** link (intent `dynatrace.settings` / `open_settings_for_schema` for `builtin:dt-javascript-runtime.allowed-outbound-connections`). The form is open. |
+| Connected, IAM scopes missing | A warning under the card: "The stored OAuth client can search users and groups, but testing them also needs iam:bindings:read, iam:policies:read and iam:boundaries:read. Add them to the client in Account Management." Shown when the token's scopes include neither those three nor `iam-policies-management` (a client with only `account-idm-read`, which is enough for the search and the status check). |
+| Failing, blocked | A warning: "The app function cannot reach *hosts*: add these hosts to the allowed outbound connections." *hosts* are the token and API hosts of this environment's stack (`sso.dynatrace.com, api.dynatrace.com` on production). It includes an **Allowed outbound connections** link (intent `dynatrace.settings` / `open_settings_for_schema` for `builtin:dt-javascript-runtime.allowed-outbound-connections`). The form is open. |
 | Failing, other | A warning: "The stored OAuth client does not work: *message*" (for example, the token request was rejected). The form is open. |
 
 **The form** has these parts:
@@ -936,6 +939,39 @@ The scope in brackets after "Bearer" is the token scope that covers the endpoint
 scope covers F7–F11. Every Account Management GET sends `Authorization: Bearer <token>` and `Accept: application/json`.
 A non-2xx response raises an error, `GET <path> returned HTTP <status>: <first 300 characters>`.
 
+### Sprint and dev environments
+
+Sprint and dev environments (`*.sprint.apps.dynatracelabs.com`, `*.dev.apps.dynatracelabs.com`) belong to accounts on
+separate stacks, each with its own SSO and Account Management API. Production SSO answers a sprint account's client
+with `400 invalid_request`. The functions (`accountStack` in [`api/app-credentials.ts`](../api/app-credentials.ts))
+therefore pick the stack from the environment URL, with the hosts dtctl uses:
+
+| Stack | Token endpoint (tried in order) | Account Management API |
+| --- | --- | --- |
+| production | `sso.dynatrace.com` | `api.dynatrace.com` |
+| sprint | `sso-sprint.dynatracelabs.com`, then `hard.token.dynatracelabs.com` | `api-hardening.internal.dynatracelabs.com` |
+| dev | `sso-dev.dynatracelabs.com`, then `dev.token.dynatracelabs.com` | `api-dev.internal.dynatracelabs.com` |
+
+The next token endpoint is tried only when one cannot be reached or answers 404. The URLs in the table above (F3–F11)
+are the production ones; on sprint and dev the same paths go to that stack's hosts. The OAuth client must be created in
+that stack's Account Management, and these hosts go into the allowed outbound connections when that allowlist is
+enforced. Generating a platform token (Problem notifications) uses the same stack.
+
+### Scopes per action and the 403 retry
+
+- **Search and status** only read users and groups, so a client with just `account-idm-read` is enough for them (it
+  is requested after the two IAM scope sets fail with `invalid_scope`).
+- **Testing a user or group** needs the IAM read scopes (`iam:bindings:read`, `iam:policies:read`,
+  `iam:boundaries:read`) or `iam-policies-management`.
+- Some deployments (seen on a sprint stack) answer `403 User not authorized.` to a token with the granted
+  fine-grained scopes. On a 403 the policy reads (bindings, policies, boundaries) are repeated once with a token for
+  `account-idm-read iam-policies-management`. If that is refused too, the error adds that the scopes are not the
+  problem: the OAuth client (or the user it acts for) lacks permission to read the account's policies and bindings.
+- **Token errors** name the likely cause by OAuth error code: `invalid_scope` lists the scope sets the client lacks;
+  `invalid_client` / `unauthorized_client` mean a wrong client ID or secret (or a deleted client);
+  `invalid_request` / `invalid_target` / `invalid_resource` point at the account UUID (or a client from another
+  stack).
+
 ### Details
 
 **B1 `iam-reference`.** The function reads the IAM policy reference and the global conditions page from
@@ -1033,10 +1069,11 @@ at a time. A 404 adds a warning.
 ## Remediation actions
 
 The tab has no Remediation actions section and writes no IAM configuration (it creates no policies, boundaries or
-bindings). Its only write is **Save to the credential vault** (B6–B8), described under
+bindings). Its only write is saving the account OAuth client, described under
 [Account Management access](#account-management-access). To change what a subject can do, build the policy or boundary
 in [IAM Policy Creator](iam-policy-creator.md) or [IAM Boundary Creator](iam-boundary-creator.md), check it here in
-*Policy Creator draft* mode, then create it and bind it in Account Management.
+*Policy Creator draft* mode, then create it with **Create in Account Management** below that tab's editor (admins)
+and bind it in Account Management.
 
 ## AI Assist on this page
 
@@ -1047,7 +1084,9 @@ It is rule-based and runs locally in the browser: nothing is sent anywhere. In t
 - "none" means *missing* only, and *denied* is a separate list;
 - `allApps` is true when any ALLOW of `app-engine:apps:run` has no `shared:app-id` condition;
 - `timeLimited` is the number of apps whose run status is conditional;
-- `unboundParams` is the number of engine notes that mention `bindParam`.
+- `unboundParams` is the number of engine notes that mention `bindParam`;
+- `iamScopesMissing` is true when the stored client works but its token has neither the three IAM read scopes nor
+  `iam-policies-management`.
 
 **No subject yet** (nothing tested, a test failed, or the draft is empty):
 
@@ -1058,12 +1097,17 @@ It is rule-based and runs locally in the browser: nothing is sent anywhere. In t
 | --- | --- | --- |
 | not draft and setup is `missing` | info | "No OAuth client is stored yet. Users and groups can be found, but their policies are only readable through the Account Management API." |
 | a failure message exists (test failure, else setup failure) | warning | the message |
+| not draft and `iamScopesMissing` | warning | "The stored OAuth client only reads users and groups: testing a user or group also needs the IAM read scopes." |
 
 Recommendations:
 
+- **High** (not draft and `iamScopesMissing`): "Add iam:bindings:read, iam:policies:read and iam:boundaries:read (or
+  iam-policies-management) to the OAuth client in Account Management; account-idm-read alone only covers the user and
+  group search."
 - **High** (not draft and setup not `ok`): "Create a read-only OAuth client (account-idm-read, iam:bindings:read,
-  iam:policies:read, iam:boundaries:read) and save it in Account Management access; keep it owner only unless every
-  app user may see the account's IAM setup."
+  iam:policies:read, iam:boundaries:read) and save it in Account Management access; leave “Every user of this app” off
+  unless every app user may see the account's IAM setup. On a sprint or dev environment, create it in that stack's
+  Account Management."
 - **Medium**, always: "Use Policy Creator draft to check a new policy (and boundary) before you bind it to a group."
 
 **With a subject.** The summary reads: "*name* (or "The draft policy"): *a* of *n* apps with access, *c* conditional,
@@ -1150,7 +1194,10 @@ statements)."
 | Symptom | Likely cause | What to do |
 | --- | --- | --- |
 | Setup card: "Users and groups are found with this environment's IAM API, but …" | No credential named `architect-assistant-account-api`, or it is owner-only and owned by someone else | Save the OAuth client in the form, or ask the owner to turn off owner only |
-| "The app function cannot reach sso.dynatrace.com and api.dynatrace.com" | The outbound allowlist is enforced | Add both hosts in `builtin:dt-javascript-runtime.allowed-outbound-connections` (use the link) |
+| "The app function cannot reach *hosts*" | The outbound allowlist is enforced | Add the listed hosts (this stack's token and API hosts) in `builtin:dt-javascript-runtime.allowed-outbound-connections` (use the link) |
+| "The OAuth token request was rejected by the sprint SSO … (400 invalid_request …)" | The client belongs to another account or stack, or the account UUID is wrong | Create the client in the sprint (or dev) Account Management and check the account UUID |
+| "… Both the iam:*:read scopes and iam-policies-management were refused, so the scopes are not the problem …" | The client, or the user it acts for, may not read the account's IAM | Create the client as (or for) an account admin |
+| Warning: "The stored OAuth client can search users and groups, but testing them also needs …" | The client has only `account-idm-read` | Add the IAM read scopes to the client |
 | "The OAuth token request was rejected (401 invalid_client …)" | Wrong client ID or secret, or wrong account UUID | Check the values in Account Management > OAuth clients and save again |
 | "The Account Management API refused the request" on GET …/bindings or …/policies | The client lacks `iam:bindings:read` / `iam:policies:read` / `iam:boundaries:read` (or `iam-policies-management`) | Add the scopes to the client |
 | "*email* was not found in the account" | The email is not a user of the account (F6 returned 404) | Search instead of testing the email directly; check the spelling |

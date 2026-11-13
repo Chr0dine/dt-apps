@@ -1,7 +1,7 @@
 import { accessTokensApiTokensClient, credentialVaultClient } from "@dynatrace-sdk/client-classic-environment-v2";
 import { getCurrentUserDetails, getEnvironmentId } from "@dynatrace-sdk/app-environment";
 import {
-  ACCOUNT_API,
+  accountStack,
   ApiError,
   accountClient,
   accountToken,
@@ -18,7 +18,7 @@ import {
 //   whether the caller may change it,
 // - save-account / save-token: store what an admin typed,
 // - generate-workflows: create a platform token in this environment with the account's OAuth client (scope
-//   platform-token:tokens:manage, POST api.dynatrace.com/iam/v1/accounts/{uuid}/platform-tokens) for the caller or a
+//   platform-token:tokens:manage, POST <account API>/iam/v1/accounts/{uuid}/platform-tokens) for the caller or a
 //   service user, and store it,
 // - generate-readconfig: create a ReadConfig API token with the caller's permissions and store it,
 // - clear: remove one token.
@@ -106,7 +106,7 @@ async function generateWorkflowsToken(creds: AppCredentials, p: Extract<Payload,
   if (!userUuid) return { status: "invalid", message: "No user to generate the token for." };
   const d = days(p.days);
   const { token } = await accountToken(client, [TOKEN_MANAGE_SCOPE]);
-  const res = await fetch(`${ACCOUNT_API}/iam/v1/accounts/${encodeURIComponent(client.accountUuid)}/platform-tokens`, {
+  const res = await fetch(`${accountStack().api}/iam/v1/accounts/${encodeURIComponent(client.accountUuid)}/platform-tokens`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({

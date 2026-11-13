@@ -54,6 +54,7 @@ import { BUCKETS, LEVEL_HINT, LEVEL_LABEL, useAppCatalog, useAppIcon, type AppCa
 import { useIamDrafts } from "../iamDrafts";
 import type { Timeframe } from "../queries";
 import { AddSelect, CatalogBanner, ConditionRow, DocLink, EditorPane, OperatorSelect, ValuePicker, card, code, codeWrap, fileNameFor, hint, plural, valuesFor, type AddGroup } from "./IamShared";
+import { PublishCard } from "./PublishCard";
 
 // ---------------------------------------------------------------------------
 // IAM Policy Creator, in three steps on the left with the live policy text on the right (editable, validated against
@@ -174,6 +175,7 @@ export function IamPolicyTab({ tf }: { tf: Timeframe }) {
                 { title: "Account Management", url: ACCOUNT_MANAGEMENT_URL },
               ]}
             />
+            <PublishCard kind="policy" name={d.name} text={text} errors={check.diagnostics.filter((x) => x.severity === "error").length} />
           </div>
         </div>
       </div>

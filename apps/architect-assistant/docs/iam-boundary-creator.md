@@ -597,8 +597,29 @@ API results are cached per source for the page load and dropped from the cache a
 
 ## Remediation actions
 
-None. The tab makes no write calls. Create the boundary in Account Management > Identity & access management >
-Policy management > Boundaries, then select it when assigning a policy to a group.
+**Create in Account Management** (below the editor) sends the text in the editor to the Account Management API
+through the `iam-publish` app function ([`api/iam-publish.function.ts`](../api/iam-publish.function.ts)), so you
+do not have to copy it into Account Management by hand.
+
+- **Who:** only the app's admins (permission `app-settings:objects:write` for this app), even when the Permissions
+  Test is allowed for every user. Everyone else sees a note and can still copy or export the text.
+- **Needs:** the account OAuth client stored in the app settings under *Account Management access* (Permissions Test
+  tab) with `iam:boundaries:write` (plus the matching `:read` scope to find existing names), or
+  `iam-policies-management`. A client still read from the credential vault entry of an earlier version is not used
+  for writes: the card asks you to save it once in the app settings. Like the Permissions Test reads, a 403 on the
+  fine-grained scopes is retried once with `iam-policies-management`.
+- **Level:** boundaries always live on the account.
+- **Disabled until** the boundary has a name and the editor shows no errors.
+- **Flow:** the function first validates the text (`POST …/validation`); nothing is written if the API rejects it,
+  and its messages are listed. It then looks for a boundary with the same name. If there is none, it
+  creates one (`POST`) and shows its UUID. If there is one, it writes nothing and asks first: **Replace the existing
+  boundary** (`PUT`, which changes the access of every group it is bound to) or **Cancel** (rename to create a new one).
+- **Comments** (`// …` lines) are not sent; the API stores the text verbatim and comments are not part of the
+  policy language.
+- **What it does not do:** it does not bind anything. A new boundary narrows nothing until you select it when binding a policy to a group in
+  Account Management > Identity & access management > Group management.
+- **Sprint and dev environments** use their own Account Management API host, as described in
+  [Permissions Test](permissions-test.md#sprint-and-dev-environments).
 
 ## AI Assist on this page
 
@@ -631,7 +652,7 @@ different data scopes."
 | Fix the errors under the editor; split conditions joined with AND into separate lines (or separate boundaries). | high | errors |
 | Add a condition those permissions support (for entities, storage:dt.security_context or storage:entity.type), or leave them out of the policy bound with this boundary. | high | not-narrowed permissions |
 | Close to 10 conditions: assign several boundaries to the same policy instead; each boundary is evaluated separately. | medium | 9 or more conditions |
-| Create it in Account Management > Identity & access management > Policy management > Boundaries, then select it when assigning policies to a group. | low | always |
+| An admin of this app can send the boundary with Create in Account Management below the editor (the API validates it first), or create it in Account Management > Identity & access management > Policy management > Boundaries. It narrows nothing until it is selected when binding a policy to a group. | low | always |
 
 ## Limitations and edge cases
 

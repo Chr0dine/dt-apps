@@ -25,6 +25,7 @@ import {
 import { settingsLink } from "../deepMonitoring";
 import { OUTBOUND_SCHEMA } from "../deepDocs";
 import { ACCOUNT_MANAGEMENT_URL } from "../iamCatalog";
+import { accountHosts } from "../iamAccessApi";
 import { DocLink, DocLinks, code, hint } from "./IamShared";
 
 // ---------------------------------------------------------------------------
@@ -172,7 +173,7 @@ function AccountForm({ status, onDone }: { status: CredentialStatus; onDone: (r:
           (Permissions Test) and {scopeList([TOKEN_MANAGE_SCOPE])}(generating platform tokens). The page also shows the account UUID.
         </li>
         <li>
-          Allow {scopeList(["sso.dynatrace.com", "api.dynatrace.com"])}in the {outbound ? <DocLink href={outbound}>allowed outbound connections</DocLink> : "allowed outbound connections"} if that
+          Allow {scopeList(accountHosts())}in the {outbound ? <DocLink href={outbound}>allowed outbound connections</DocLink> : "allowed outbound connections"} if that
           allowlist is enforced.
         </li>
       </ol>

@@ -1089,9 +1089,32 @@ that opens tries again. Copy and Export make no request.
 
 ## Remediation actions
 
-This tab has no Remediation actions section and makes no write calls. The result is text that you create as a
-policy in [Account Management](https://myaccount.dynatrace.com/) > Identity & access management > Policy management,
-where it is validated again on save, and then bind to a group.
+**Create in Account Management** (below the editor) sends the text in the editor to the Account Management API
+through the `iam-publish` app function ([`api/iam-publish.function.ts`](../api/iam-publish.function.ts)), so you
+do not have to copy it into Account Management by hand.
+
+- **Who:** only the app's admins (permission `app-settings:objects:write` for this app), even when the Permissions
+  Test is allowed for every user. Everyone else sees a note and can still copy or export the text.
+- **Needs:** the account OAuth client stored in the app settings under *Account Management access* (Permissions Test
+  tab) with `iam:policies:write` (plus the matching `:read` scope to find existing names), or
+  `iam-policies-management`. A client still read from the credential vault entry of an earlier version is not used
+  for writes: the card asks you to save it once in the app settings. Like the Permissions Test reads, a 403 on the
+  fine-grained scopes is retried once with `iam-policies-management`.
+- **Level:** *This environment* (default; the policy exists only in this environment) or *Account (all
+  environments)*. An optional description is sent with it (default "Created with Architect Assistant").
+- **Disabled until** the policy has a name and the editor shows no errors.
+- **Flow:** the function first validates the text (`POST …/validation`); nothing is written if the API rejects it,
+  and its messages are listed. It then looks for a policy with the same name at the chosen level. If there is none, it
+  creates one (`POST`) and shows its UUID. If there is one, it writes nothing and asks first: **Replace the existing
+  policy** (`PUT`, which changes the access of every group it is bound to) or **Cancel** (rename to create a new one).
+- **Comments** (`// …` lines) are not sent; the API stores the text verbatim and comments are not part of the
+  policy language.
+- **What it does not do:** it does not bind anything. A new policy grants nothing until you bind it to a group in
+  Account Management > Identity & access management > Group management.
+- **Sprint and dev environments** use their own Account Management API host, as described in
+  [Permissions Test](permissions-test.md#sprint-and-dev-environments).
+
+You can still copy or export the text and create the policy in Account Management by hand.
 
 ## AI Assist on this page
 
@@ -1154,7 +1177,8 @@ hand-edited.
 | Use MATCH for dt.security_context (e.g. MATCH ("TeamA")) if any data source sets several security contexts on a record. | medium | securityContextWithoutMatch |
 | Replace DENY statements with narrower ALLOW statements where possible … | medium | any DENY rule |
 | If several teams need the same permissions for different data, write the permissions once and move the data scope into one boundary per team, or use ${bindParam:…} templating. | low | dims set and no binding parameters |
-| Copy the text into Account Management > Identity & access management > Policy management > Create policy; it is validated again on save. | low | always |
+| Once the errors are fixed, an admin of this app can send the policy with Create in Account Management below the editor (the API validates it first), or copy it into Account Management … Then bind it to a group. | low | editor shows errors |
+| An admin of this app can send the policy with Create in Account Management below the editor (the API validates it first; choose this environment or the whole account), or copy it into Account Management … It grants nothing until it is bound to a group. | low | no errors |
 
 ## Limitations and edge cases
 

@@ -1,5 +1,5 @@
 import { functions } from "@dynatrace-sdk/app-utils";
-import { getEnvironmentId } from "@dynatrace-sdk/app-environment";
+import { getEnvironmentId, getEnvironmentUrl } from "@dynatrace-sdk/app-environment";
 import { usersAndGroupsClient } from "@dynatrace-sdk/client-iam";
 import { errorMessage } from "./remediation";
 import type { AccessBinding, AccessSubject } from "./iamAccess";
@@ -14,7 +14,23 @@ import type { AccessBinding, AccessSubject } from "./iamAccess";
 // - whether the function can use the account OAuth client (stored in the app settings by AppCredentialsCard).
 // ---------------------------------------------------------------------------
 
-export const OUTBOUND_HOSTS = ["sso.dynatrace.com", "api.dynatrace.com"];
+/**
+ * Hosts the app functions call for the Account Management API, by the stack this environment is on (mirrors
+ * accountStack in api/app-credentials.ts): sprint and dev environments use their own SSO and API hosts.
+ */
+export function accountHosts(): string[] {
+  let host = "";
+  try {
+    host = new URL(getEnvironmentUrl()).hostname.toLowerCase();
+  } catch {
+    host = typeof location !== "undefined" ? location.hostname.toLowerCase() : "";
+  }
+  if (host.endsWith(".dynatracelabs.com")) {
+    if (/(^|\.)sprint\./.test(host)) return ["sso-sprint.dynatracelabs.com", "hard.token.dynatracelabs.com", "api-hardening.internal.dynatracelabs.com"];
+    if (/(^|\.)dev\./.test(host)) return ["sso-dev.dynatracelabs.com", "dev.token.dynatracelabs.com", "api-dev.internal.dynatracelabs.com"];
+  }
+  return ["sso.dynatrace.com", "api.dynatrace.com"];
+}
 export const ACCESS_DOCS = {
   oauth: { title: "OAuth clients", url: "https://docs.dynatrace.com/docs/manage/identity-access-management/access-tokens-and-oauth-clients/oauth-clients" },
   accountApi: { title: "Account Management API", url: "https://docs.dynatrace.com/docs/dynatrace-api/account-management-api" },

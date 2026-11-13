@@ -781,7 +781,7 @@ export function analyzeIamPolicy(d: IamPolicyInsightInput): AIInsightsData {
   if (d.securityContextWithoutMatch) recommendations.push({ impact: "medium", text: 'Use MATCH for dt.security_context (e.g. MATCH ("TeamA")) if any data source sets several security contexts on a record.' });
   if (d.denyConditionalGrail.length || d.denyUnconditional) recommendations.push({ impact: "medium", text: "Replace DENY statements with narrower ALLOW statements where possible; DENY overrules every ALLOW and is hard to reason about across policies." });
   if (d.dims.length && !d.bindParams) recommendations.push({ impact: "low", text: "If several teams need the same permissions for different data, write the permissions once and move the data scope into one boundary per team, or use ${bindParam:…} templating." });
-  recommendations.push({ impact: "low", text: "Copy the text into Account Management > Identity & access management > Policy management > Create policy; it is validated again on save." });
+  recommendations.push({ impact: "low", text: d.errors ? "Once the errors are fixed, an admin of this app can send the policy with Create in Account Management below the editor (the API validates it first), or copy it into Account Management > Identity & access management > Policy management. Then bind it to a group." : "An admin of this app can send the policy with Create in Account Management below the editor (the API validates it first; choose this environment or the whole account), or copy it into Account Management > Identity & access management > Policy management. It grants nothing until it is bound to a group." });
   return { summary, insights, recommendations };
 }
 
@@ -823,7 +823,7 @@ export function analyzeIamBoundary(d: IamBoundaryInsightInput): AIInsightsData {
   if (d.errors) recommendations.push({ impact: "high", text: "Fix the errors under the editor; split conditions joined with AND into separate lines (or separate boundaries)." });
   if (d.preview?.notNarrowed.length) recommendations.push({ impact: "high", text: "Add a condition those permissions support (for entities, storage:dt.security_context or storage:entity.type), or leave them out of the policy bound with this boundary." });
   if (d.conditions >= 9) recommendations.push({ impact: "medium", text: "Close to 10 conditions: assign several boundaries to the same policy instead; each boundary is evaluated separately." });
-  recommendations.push({ impact: "low", text: "Create it in Account Management > Identity & access management > Policy management > Boundaries, then select it when assigning policies to a group." });
+  recommendations.push({ impact: "low", text: "An admin of this app can send the boundary with Create in Account Management below the editor (the API validates it first), or create it in Account Management > Identity & access management > Policy management > Boundaries. It narrows nothing until it is selected when binding a policy to a group." });
   return { summary, insights, recommendations };
 }
 
@@ -847,7 +847,11 @@ export type IamAccessInsightInput = {
   data: { unrestricted: string[]; limited: string[]; conditional: string[]; none: string[]; denied: string[] };
   dimensions: string[];
   unboundParams: number;
+  /** The stored client works but its token lacks iam:bindings:read / iam:policies:read / iam:boundaries:read and iam-policies-management. */
+  iamScopesMissing: boolean;
 };
+
+const IAM_SCOPES_REC: RecommendationItem = { impact: "high", text: "Add iam:bindings:read, iam:policies:read and iam:boundaries:read (or iam-policies-management) to the OAuth client in Account Management; account-idm-read alone only covers the user and group search." };
 
 export function analyzeIamAccess(d: IamAccessInsightInput): AIInsightsData {
   if (!d.subject) {
@@ -856,8 +860,12 @@ export function analyzeIamAccess(d: IamAccessInsightInput): AIInsightsData {
     if (d.mode !== "draft" && d.setup === "missing")
       insights.push({ severity: "info", icon: "🔑", text: "No OAuth client is stored yet. Users and groups can be found, but their policies are only readable through the Account Management API." });
     if (d.failure) insights.push({ severity: "warning", icon: "⚠️", text: d.failure });
+    if (d.mode !== "draft" && d.iamScopesMissing) {
+      insights.push({ severity: "warning", icon: "🔐", text: "The stored OAuth client only reads users and groups: testing a user or group also needs the IAM read scopes." });
+      recommendations.push(IAM_SCOPES_REC);
+    }
     if (d.mode !== "draft" && d.setup !== "ok")
-      recommendations.push({ impact: "high", text: "Create a read-only OAuth client (account-idm-read, iam:bindings:read, iam:policies:read, iam:boundaries:read) and save it in Account Management access; keep it owner only unless every app user may see the account's IAM setup." });
+      recommendations.push({ impact: "high", text: "Create a read-only OAuth client (account-idm-read, iam:bindings:read, iam:policies:read, iam:boundaries:read) and save it in Account Management access; leave “Every user of this app” off unless every app user may see the account's IAM setup. On a sprint or dev environment, create it in that stack's Account Management." });
     recommendations.push({ impact: "medium", text: "Use Policy Creator draft to check a new policy (and boundary) before you bind it to a group." });
     return {
       summary: d.mode === "draft" ? "Build a policy in the IAM Policy Creator tab to test it here." : "Search for a user (name or email) or a group (name contains) and click a result to test it.",
