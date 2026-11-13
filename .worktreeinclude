@@ -3,6 +3,7 @@
 
 # Claude Code instructions, skills and agents (local only)
 CLAUDE.md
+AGENTS.md
 apps/*/CLAUDE.md
 .claude/skills/
 .claude/agents/
@@ -14,5 +15,6 @@ templates/golden-app/
 # Local secrets and tenant config, so dt-app dev/deploy work without re-auth
 .env
 .env.*
+apps/*/.env
 tenants.json
 apps/*/.dt-app/.tokens.json

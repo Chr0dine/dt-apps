@@ -93,7 +93,7 @@ All classic API calls go through the `classic-dashboards` app function ([classic
 | `list` | `GET {classic}/api/config/v1/dashboards` | Everyone, with a token stored |
 | `get` | `GET {classic}/api/config/v1/dashboards/{id}` | Everyone, with a token stored |
 
-`{classic}` is the environment URL with `.apps.dynatrace.com` replaced by `.live.dynatrace.com` (other hosts drop the `.apps` label, e.g. `chg74771.sprint.dynatracelabs.com`). The token is sent as `Authorization: Api-Token …` and never returned to the browser.
+`{classic}` is the environment URL with `.apps.dynatrace.com` replaced by `.live.dynatrace.com` (other hosts drop the `.apps` label, e.g. `abc12345.sprint.dynatracelabs.com`). The token is sent as `Authorization: Api-Token …` and never returned to the browser.
 
 ## Messages
 
@@ -117,7 +117,7 @@ All classic API calls go through the `classic-dashboards` app function ([classic
 
 ## Sprint and dev environments
 
-On `*.sprint.apps.dynatracelabs.com` and `*.dev.apps.dynatracelabs.com` the classic URL is the same host without `.apps` (e.g. `https://chg74771.sprint.dynatracelabs.com`). Create the ReadConfig token in that environment, and allow that host if outbound connections are restricted.
+On `*.sprint.apps.dynatracelabs.com` and `*.dev.apps.dynatracelabs.com` the classic URL is the same host without `.apps` (e.g. `https://abc12345.sprint.dynatracelabs.com`). Create the ReadConfig token in that environment, and allow that host if outbound connections are restricted.
 
 ## Related pages
 

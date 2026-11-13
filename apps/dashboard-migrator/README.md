@@ -36,7 +36,7 @@ In the app, every tab links to its page (top right) and lists the relevant Dynat
 
 Management zones are carried over as `classicEntitySelector("type(X),mzName(\"…\")")` and flagged so they can be replaced by segments. A classic tile timeframe becomes `from:` in the query; the classic default timeframe is noted in the summary tile.
 
-Metric key mapping: `ui/app/translate/metrics.ts`. Known keys were checked against the guu84124 metric catalog; unknown `builtin:` keys are mapped heuristically and flagged, and the Translate tab checks every key against the tenant.
+Metric key mapping: `ui/app/translate/metrics.ts`. Known keys were checked against a demo tenant's metric catalog; unknown `builtin:` keys are mapped heuristically and flagged, and the Translate tab checks every key against the tenant.
 
 ## Credentials (classic dashboards from the environment)
 

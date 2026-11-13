@@ -1,4 +1,4 @@
-// Classic (builtin:) metric keys -> Grail metric keys. Keys marked in the table were checked against the guu84124
+// Classic (builtin:) metric keys -> Grail metric keys. Keys marked in the table were checked against a demo tenant's
 // metric catalog (`metrics | filter in(metric.key, ...)`); anything else is mapped heuristically and flagged, and the
 // Translate tab checks every resulting key against the tenant before it is trusted.
 

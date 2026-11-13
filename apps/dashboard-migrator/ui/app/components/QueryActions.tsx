@@ -4,7 +4,7 @@ import { Flex } from "@dynatrace/strato-components/layouts";
 import Colors from "@dynatrace/strato-design-tokens/colors";
 
 // Shown under every query-backed chart: exposes the DQL behind it and hands it to Notebooks or Dashboards.
-// Intent IDs verified on guu84124: dynatrace.notebooks/view-query and dynatrace.dashboards/add-to-dashboard.
+// Intent IDs verified on a demo tenant: dynatrace.notebooks/view-query and dynatrace.dashboards/add-to-dashboard.
 
 export const actionBtn: React.CSSProperties = {
   background: "rgba(128,128,128,0.08)",

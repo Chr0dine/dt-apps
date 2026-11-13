@@ -1,6 +1,5 @@
 {
   "$schema": "./.dt-app/app.config.schema.json",
-  "environmentUrl": "https://chg74771.sprint.apps.dynatracelabs.com",
   "app": {
     "name": "Architect Assistant",
     "version": "0.1.2",

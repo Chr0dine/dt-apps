@@ -3,6 +3,7 @@ templates/golden-app/
 
 # Claude Code config and instructions
 CLAUDE.md
+AGENTS.md
 .claude/skills/
 .claude/agents/
 .claude/settings.local.json
@@ -10,6 +11,7 @@ CLAUDE.md
 # Secrets and tenant-specific config
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 tenants.json

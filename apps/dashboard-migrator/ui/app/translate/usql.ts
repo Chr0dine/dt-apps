@@ -3,7 +3,7 @@
 // Supported: SELECT list with COUNT(*), COUNT(DISTINCT x), AVG/SUM/MIN/MAX/MEDIAN/PERCENTILE, TOP(x, n), DATETIME(...)
 // buckets and AS aliases; FROM usersession | useraction; WHERE with = != <> < > <= >=, AND/OR/NOT, IN (...), IS [NOT]
 // NULL, LIKE, STARTSWITH; GROUP BY; ORDER BY; LIMIT. FUNNEL and conversions are reported as manual.
-// Field names are mapped to the new RUM schema (verified on guu84124); unknown fields are kept and flagged.
+// Field names are mapped to the new RUM schema (verified on a demo tenant); unknown fields are kept and flagged.
 
 import type { Confidence } from "./types";
 import { dqlStr, fieldRef } from "./metricSelector";
